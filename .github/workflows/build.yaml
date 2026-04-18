@@ -1,40 +1,87 @@
-name: build
+name: release
 on:
-  - push
+  push:
+    branches:
+      - master
+      - fix/*
+
+permissions:
+  id-token: write # Required for npm trusted publishing (OIDC) / --provenance
+  contents: read
 
 jobs:
-  release:
-    # needs: test
+  publish-core:
     runs-on: ubuntu-latest
-    #if: github.ref == 'refs/heads/master'
-    name: npm upload
+    if: github.ref == 'refs/heads/master'
+    name: publish react-ipynb-renderer
     steps:
       - uses: actions/checkout@v4
-      - name: setup
-        uses: actions/setup-node@v4
         with:
-          node-version: "24.1.0"
-
-      - name: install pnpm
-        uses: pnpm/action-setup@v4
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
         with:
           version: latest
-
-      - name: cache
-        uses: actions/cache@v4
+      - uses: actions/setup-node@v4
         with:
-          path: |
-            node_modules
-            ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: upload
+          node-version: '24.1.0'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm install -g npm@latest
+      - name: remove authToken from .npmrc
         run: |
-          git submodule update --init --recursive
+          NPM_RC=$(npm config get userconfig)
+          sed -i '/_authToken/d' "$NPM_RC" 2>/dev/null || true
+      - name: publish react-ipynb-renderer
+        run: |
           pnpm install
-          make build
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-          pnpm publish --no-git-checks || true
-          unlink katex/README.md && cp README.md katex/README.md
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > katex/.npmrc
-          cd katex && pnpm publish --no-git-checks || true
+          pnpm build
+          pnpm build-css
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$( [[ "$VERSION" == *-* ]] && echo "--tag next" || echo "" )
+          pnpm publish --access public --provenance $TAG --no-git-checks || true
+      - name: wait for react-ipynb-renderer on npm
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          for i in $(seq 1 30); do
+            if npm view "react-ipynb-renderer@$VERSION" version 2>/dev/null; then
+              echo "react-ipynb-renderer@$VERSION is available"
+              break
+            fi
+            echo "Waiting for react-ipynb-renderer@$VERSION... ($i/30)"
+            sleep 5
+          done
+
+  publish-katex:
+    needs: publish-core
+    runs-on: ubuntu-latest
+    name: publish react-ipynb-renderer-katex
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.1.0'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm install -g npm@latest
+      - name: remove authToken from .npmrc
+        run: |
+          NPM_RC=$(npm config get userconfig)
+          sed -i '/_authToken/d' "$NPM_RC" 2>/dev/null || true
+      - name: build core (provides dist/styles for katex)
+        run: |
+          pnpm install
+          pnpm build
+          pnpm build-css
+      - name: publish react-ipynb-renderer-katex
+        run: |
+          rm -f katex/README.md && cp README.md katex/README.md
+          cd katex
+          pnpm install
+          pnpm build
+          pnpm build-css
+          VERSION=$(node -p "require('./package.json').version")
+          TAG=$( [[ "$VERSION" == *-* ]] && echo "--tag next" || echo "" )
+          pnpm publish --access public --provenance $TAG --no-git-checks || true

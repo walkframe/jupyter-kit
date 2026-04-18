@@ -21,17 +21,13 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.tsx'),
-      name: 'ReactIpynbRenderer',
-      fileName: (format) => format === 'umd' ? 'index.js' : 'index',
-      formats: ['umd']
+      fileName: () => 'index.js',
+      formats: ['es']
     },
     rollupOptions: {
       external: [/^react/, /^@?react-dom/],
       output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
+        inlineDynamicImports: true,
       },
     },
     sourcemap: false,

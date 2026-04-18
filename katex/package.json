@@ -1,7 +1,7 @@
 {
   "name": "react-ipynb-renderer-katex",
   "homepage": "https://docs.walkframe.com/products/react-ipynb-renderer/",
-  "version": "2.3.0",
+  "version": "2.3.1-rc.0",
   "description": "A react component that displays an ipynb file for katex.",
   "main": "dist/index.js",
   "module": "dist/index.js",

@@ -1,7 +1,7 @@
 {
   "name": "react-ipynb-renderer",
   "homepage": "https://docs.walkframe.com/react-ipynb-renderer",
-  "version": "2.3.1-rc.0",
+  "version": "2.3.1",
   "description": "A react component that displays an ipynb file.",
   "main": "dist/index.js",
   "module": "dist/index.js",

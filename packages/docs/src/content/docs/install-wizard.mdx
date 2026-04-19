@@ -1,0 +1,258 @@
+---
+title: Install wizard
+description: Answer a few questions to get the exact @jupyter-kit install command and starter snippet for your stack.
+---
+
+import InstallLine from '../../components/InstallLine.astro';
+import InstallWizard from '../../components/InstallWizard.tsx';
+import PMSwitcher from '../../components/PMSwitcher.astro';
+
+Every `@jupyter-kit/*` package is self-contained — installing a package
+pulls in everything it needs. Answer the questions in the wizard below, or
+jump to **Quick pick** for common scenarios.
+
+<PMSwitcher />
+
+## What do you need?
+
+<InstallWizard client:only="react" />
+
+## Quick pick
+
+One copy-pastable install per scenario — no follow-up `pnpm add` needed.
+
+<div class="scroll-table">
+
+| Scenario | Install |
+|---|---|
+| React app, render a notebook | <InstallLine label="" command="pnpm add @jupyter-kit/react @jupyter-kit/theme-default" /> |
+| Vue 3 app, render a notebook | <InstallLine label="" command="pnpm add @jupyter-kit/vue @jupyter-kit/theme-default" /> |
+| Web Component (any host) | <InstallLine label="" command="pnpm add @jupyter-kit/wc @jupyter-kit/theme-default" /> |
+| Vanilla JS / custom host | <InstallLine label="" command="pnpm add @jupyter-kit/core @jupyter-kit/theme-default" /> |
+| \+ KaTeX (CDN, recommended) | <InstallLine label="" command="pnpm add @jupyter-kit/katex-cdn" /> |
+| \+ KaTeX (bundled) | <InstallLine label="" command="pnpm add @jupyter-kit/katex katex" /> |
+| \+ MathJax (CDN) | <InstallLine label="" command="pnpm add @jupyter-kit/mathjax-cdn" /> |
+| \+ MathJax (bundled) | <InstallLine label="" command="pnpm add @jupyter-kit/mathjax mathjax-full" /> |
+| \+ Edit + run Python | <InstallLine label="" command="pnpm add @jupyter-kit/executor-pyodide" /> |
+| \+ Edit + run R (GPL-2.0+) | <InstallLine label="" command="pnpm add @jupyter-kit/executor-webr webr" /> |
+| \+ ipywidgets (static) | <InstallLine label="" command="pnpm add @jupyter-kit/widgets" /> |
+| \+ ipywidgets (live w/ Pyodide) | <InstallLine label="" command="pnpm add @jupyter-kit/widgets @jupyter-kit/executor-pyodide" /> |
+| Ship every chrome theme | <InstallLine label="" command="pnpm add @jupyter-kit/theme-all" /> |
+
+</div>
+
+Each `+` row is additive — combine with any framework row above.
+
+## Bundle cost
+
+Approximate client-side bundle impact (minified, no gzip):
+
+<div class="scroll-table">
+
+| Package | Cost | Notes |
+|---|---:|---|
+| `@jupyter-kit/core` | ~80 KB | Markdown + Lezer + sanitizer included |
+| `@jupyter-kit/react` / `vue` / `wc` | +5 KB | Thin wrapper around core |
+| `@jupyter-kit/theme-default` | ~10 KB CSS | Plus one syntax theme (~3 KB) |
+| `@jupyter-kit/editor-codemirror` | ~300 KB | CodeMirror 6 + grammars |
+| `@jupyter-kit/executor-pyodide` | ~320 KB | Editor + worker bridge. Pyodide itself (~10 MB) is fetched from CDN at first run |
+| `@jupyter-kit/executor-webr` | ~300 KB | Editor + `webr`. WebR runtime fetched at first run |
+| `@jupyter-kit/widgets` | ~600 KB – 1 MB | `@jupyter-widgets/{base,controls,html-manager,output}` pulled in lazily via dynamic import |
+| `@jupyter-kit/comm` | 0 KB | Types only — no runtime bytes |
+| `@jupyter-kit/katex-cdn` | ~2 KB | KaTeX (~70 KB gz) fetched from CDN |
+| `@jupyter-kit/mathjax-cdn` | ~2 KB | MathJax fetched from CDN |
+| `@jupyter-kit/katex` | ~70 KB gz | KaTeX bundled in-tree |
+| `@jupyter-kit/mathjax` | ~700 KB gz | MathJax bundled in-tree |
+
+</div>
+
+Costs marked "fetched from CDN" mean you pay once at runtime, cached
+across visits.
+
+## What's auto-installed
+
+Installing a wrapper / plugin pulls in everything it depends on:
+
+| When you install… | You also get (transitively) |
+|---|---|
+| `@jupyter-kit/react` / `vue` / `wc` | `@jupyter-kit/core` |
+| `@jupyter-kit/editor-codemirror` | `@codemirror/{state,view,commands,language,lang-python,legacy-modes}` |
+| `@jupyter-kit/executor-pyodide` | `@jupyter-kit/{editor-codemirror,comm}` + CodeMirror + grammars |
+| `@jupyter-kit/executor-webr` | `@jupyter-kit/editor-codemirror` + `webr` |
+| `@jupyter-kit/widgets` | `@jupyter-widgets/{base,base-manager,controls,html-manager,output}` + `@jupyter-kit/comm` |
+| `@jupyter-kit/katex-cdn` / `mathjax-cdn` | Math engine fetched from CDN at runtime — nothing else to install |
+| Any `@jupyter-kit/theme-<name>` | 8 syntax themes under `./syntax/*.css` included |
+
+The Pyodide runtime (~10 MB) and WebR runtime are fetched from a CDN on
+first use — they're not npm packages, so you can never install them ahead
+of time.
+
+## Package catalog
+
+### Framework wrappers — pick zero or one
+
+| Package | Description | Peer deps |
+|---|---|---|
+| `@jupyter-kit/react` | `<Notebook>` React component | `react`, `react-dom` ≥ 16.9 |
+| `@jupyter-kit/vue` | Vue 3 `<Notebook>` component | `vue` ≥ 3.3 |
+| `@jupyter-kit/wc` | `<jk-notebook>` Web Component | _(none)_ |
+| `@jupyter-kit/core` | Engine only — use from vanilla JS | _(none)_ |
+
+### Themes — 13 chromes (pick at least one)
+
+Every chrome package also ships the 8 syntax themes under `./syntax/*.css`.
+
+| Package | Chrome feel |
+|---|---|
+| `@jupyter-kit/theme-default` | Classic Jupyter light |
+| `@jupyter-kit/theme-dark` | Jupyter dark |
+| `@jupyter-kit/theme-chesterish` | Blue-tinted dark |
+| `@jupyter-kit/theme-darkbronco` | Dark, warm accents |
+| `@jupyter-kit/theme-dorkula` | Dracula-inspired |
+| `@jupyter-kit/theme-grade3` | Soft pastel light |
+| `@jupyter-kit/theme-gruvboxd` | Gruvbox dark |
+| `@jupyter-kit/theme-gruvboxl` | Gruvbox light |
+| `@jupyter-kit/theme-monokai` | Monokai dark |
+| `@jupyter-kit/theme-oceans16` | Ocean-16 dark |
+| `@jupyter-kit/theme-onedork` | One Dark Jupyter variant |
+| `@jupyter-kit/theme-solarizedd` | Solarized Dark |
+| `@jupyter-kit/theme-solarizedl` | Solarized Light |
+| `@jupyter-kit/theme-all` | Every chrome + every syntax theme, under subpaths |
+
+```ts
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+```
+
+See the [theme switcher demo](/demos/themes/).
+
+### Syntax highlighting (per-language)
+
+Python is built into core. Other languages need a Lezer parser as a peer
+dep — opt-in so unused parsers never ship:
+
+| Language | `import` from | Extra install |
+|---|---|---|
+| Python | `@jupyter-kit/core/langs/python` | _(in core)_ |
+| JavaScript / TypeScript | `@jupyter-kit/core/langs/javascript` | `@lezer/javascript` |
+| R | `@jupyter-kit/core/langs/r` | _(covered by `@codemirror/legacy-modes`)_ |
+| Julia | `@jupyter-kit/core/langs/julia` | _(none)_ |
+| Haskell | `@jupyter-kit/core/langs/haskell` | _(none)_ |
+| Ruby | `@jupyter-kit/core/langs/ruby` | _(none)_ |
+
+If you've already installed `@jupyter-kit/editor-codemirror` or either
+executor, `@codemirror/legacy-modes` is already present — R / Julia /
+Haskell / Ruby highlight out of the box.
+
+```tsx
+import { python } from '@jupyter-kit/core/langs/python';
+import { r } from '@jupyter-kit/core/langs/r';
+
+<Notebook languages={[python, r]} language="r" ipynb={...} />
+```
+
+### Math rendering — pick at most one
+
+| Package | Install | Bundle cost |
+|---|---|---|
+| KaTeX, bundled | `pnpm add @jupyter-kit/katex katex` | ~70 KB gz |
+| KaTeX, CDN | `pnpm add @jupyter-kit/katex-cdn` | ~2 KB gz |
+| MathJax, bundled | `pnpm add @jupyter-kit/mathjax mathjax-full` | ~700 KB gz |
+| MathJax, CDN | `pnpm add @jupyter-kit/mathjax-cdn` | ~2 KB gz |
+
+```ts
+import { createKatexPlugin } from '@jupyter-kit/katex';
+import 'katex/dist/katex.min.css';
+
+<Notebook plugins={[createKatexPlugin()]} ... />
+```
+
+### Edit + execute in browser
+
+Installing an executor gives you editable cells **and** the matching
+runtime in one command — the editor plugin is pulled in transitively:
+
+| Install | Runs | Auto-installs |
+|---|---|---|
+| `@jupyter-kit/executor-pyodide` | Python via Pyodide (CDN) | `editor-codemirror` + CodeMirror + Python grammar + `comm` |
+| `@jupyter-kit/executor-webr webr` | R via WebR (CDN) | `editor-codemirror` + CodeMirror + R grammar |
+
+```tsx
+import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+import { python } from '@codemirror/lang-python';
+
+<Notebook
+  executor={createPyodideExecutor()}
+  plugins={[createEditorPlugin({ extensions: [python()] })]}
+  ...
+/>
+```
+
+:::caution[GPL-2.0-or-later]
+`webr` and therefore `@jupyter-kit/executor-webr` embed the R interpreter
+and are licensed GPL-2.0-or-later. If you ship this, your application may
+need to comply with GPL terms. The rest of `@jupyter-kit` is Apache-2.0.
+:::
+
+See the [Pyodide demo](/demos/pyodide/) and [WebR demo](/demos/webr/).
+
+### ipywidgets (sliders, buttons, dropdowns)
+
+Renders `application/vnd.jupyter.widget-view+json` outputs. The plugin is
+opt-in: notebooks without widgets shouldn't pay the bundle cost.
+
+| Package | Purpose |
+|---|---|
+| `@jupyter-kit/widgets` | Renders widget-view / hydrates widget-state from notebook metadata |
+| `@jupyter-kit/comm` | Comm protocol types — zero runtime cost |
+
+Two modes:
+
+- **Static** — `@jupyter-kit/widgets` alone. Hydrates
+  `metadata.widgets["application/vnd.jupyter.widget-state+json"]` from the
+  ipynb. Shows saved values; non-interactive. Same as nbviewer on
+  `jupyter.org`.
+- **Live** — `widgets` + `executor-pyodide`. Sliders drive Python
+  callbacks; output widgets re-render on each change.
+
+```tsx
+import { createWidgetsPlugin } from '@jupyter-kit/widgets';
+import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
+
+<Notebook
+  executor={createPyodideExecutor()}
+  plugins={[createWidgetsPlugin()]}
+  ...
+/>
+```
+
+See the [widgets gallery demo](/demos/pyodide/) (select _widgets-gallery_
+in the fixture dropdown).
+
+## Upgrading CodeMirror, React, etc.
+
+All transitively-installed versions can be overridden via your package
+manager's version resolution field. For pnpm:
+
+```json
+{
+  "pnpm": {
+    "overrides": {
+      "@codemirror/state": "^6.5.0"
+    }
+  }
+}
+```
+
+For npm/yarn, see their respective `overrides` / `resolutions` fields.
+
+## What you **never** need to install
+
+- `prism.js` / `highlight.js` / `react-syntax-highlighter` — replaced by
+  Lezer inside core.
+- `react-markdown` / `remark-math` directly — the markdown pipeline is
+  built into core.
+- `isomorphic-dompurify` or a separate sanitizer — core bundles DOMPurify.
+- `jsdom` — the renderer is client-only. For SSR, use your framework's
+  hydration boundary (e.g. `client:only` in Astro, dynamic import in Next).

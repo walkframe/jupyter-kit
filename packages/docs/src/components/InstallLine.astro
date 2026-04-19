@@ -1,0 +1,143 @@
+---
+interface Props {
+  /** Command text, e.g. "pnpm add @jupyter-kit/react". The prefix
+   *  (`pnpm add` / `npm install` / `yarn add`) is swapped at render time
+   *  based on the page-wide PM selector. Peer deps / extra flags after the
+   *  packages are preserved verbatim. */
+  command: string;
+  label?: string;
+}
+const { command, label } = Astro.props;
+
+// Normalise the command into just the package list (everything after the
+// install verb). Accept any of the three PM prefixes so authors can keep
+// writing `pnpm add …` in content.
+function extractPackages(cmd: string): string {
+  const trimmed = cmd.trim();
+  const m = trimmed.match(/^(?:pnpm add|npm (?:install|i)|yarn add)\s+(.*)$/);
+  return m ? m[1] : trimmed;
+}
+const packages = extractPackages(command);
+---
+
+<div class="install-row">
+  {label && <div class="install-label">{label}</div>}
+  <div class="install-line" data-packages={packages}>
+    <code class="install-command">{`pnpm add ${packages}`}</code>
+    <button type="button" class="copy-btn" aria-label="Copy install command">
+      Copy
+    </button>
+  </div>
+</div>
+
+<script>
+  const VERB: Record<string, string> = {
+    npm: 'npm install',
+    yarn: 'yarn add',
+    pnpm: 'pnpm add',
+  };
+  const STORAGE_KEY = 'jupyter-kit-docs:pm';
+
+  const readPM = (): 'npm' | 'yarn' | 'pnpm' => {
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      if (v === 'npm' || v === 'yarn' || v === 'pnpm') return v;
+    } catch { /* ignore */ }
+    return 'pnpm';
+  };
+
+  const applyPM = (pm: string) => {
+    const verb = VERB[pm] ?? VERB.pnpm;
+    document.querySelectorAll<HTMLElement>('.install-line').forEach((line) => {
+      const pkgs = line.dataset.packages ?? '';
+      const code = line.querySelector<HTMLElement>('.install-command');
+      if (code) code.textContent = `${verb} ${pkgs}`;
+    });
+  };
+
+  const init = () => {
+    applyPM(readPM());
+
+    document.querySelectorAll<HTMLButtonElement>('.install-line .copy-btn').forEach((btn) => {
+      if (btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', async () => {
+        const code = btn.parentElement?.querySelector<HTMLElement>('.install-command');
+        const cmd = code?.textContent ?? '';
+        try {
+          await navigator.clipboard.writeText(cmd);
+          const prev = btn.textContent;
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = prev;
+            btn.classList.remove('copied');
+          }, 1200);
+        } catch {
+          /* clipboard unavailable — ignore */
+        }
+      });
+    });
+  };
+
+  init();
+  document.addEventListener('astro:page-load', init);
+  document.addEventListener('pm-change', (e) => {
+    applyPM((e as CustomEvent).detail);
+  });
+</script>
+
+<style>
+  .install-row {
+    margin: 0.6rem 0 1rem;
+  }
+  .install-label {
+    font-size: 0.85rem;
+    color: var(--sl-color-gray-2, #ccc);
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+  }
+  .install-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--sl-color-bg-inline-code, rgba(127, 127, 127, 0.15));
+    border: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+    border-radius: 4px;
+    padding: 0.35rem 0.5rem;
+  }
+  .install-line code {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    padding: 0;
+    font-family: var(--sl-font-mono, ui-monospace, SFMono-Regular, monospace);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    user-select: all;
+    color: var(--sl-color-text);
+  }
+  .install-line code::-webkit-scrollbar {
+    height: 2px;
+  }
+  .copy-btn {
+    flex-shrink: 0;
+    background: var(--sl-color-gray-5, #444);
+    color: var(--sl-color-white, #fff);
+    border: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+    border-radius: 3px;
+    padding: 0.15rem 0.6rem;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  .copy-btn:hover {
+    background: var(--sl-color-gray-4, #555);
+  }
+  .copy-btn.copied {
+    background: var(--sl-color-green, #2ea043);
+    color: #fff;
+  }
+</style>

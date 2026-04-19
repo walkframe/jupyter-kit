@@ -1,0 +1,40 @@
+/* One Light — for @jupyter-kit/highlight (Lezer classHighlighter tokens). */
+.jknb-root pre,
+.jknb-root code {
+  color: #383a42;
+}
+.jknb-root .tok-comment { color: #a0a1a7; font-style: italic; }
+.jknb-root .tok-keyword,
+.jknb-root .tok-controlKeyword,
+.jknb-root .tok-definitionKeyword,
+.jknb-root .tok-moduleKeyword,
+.jknb-root .tok-operatorKeyword { color: #a626a4; }
+.jknb-root .tok-string,
+.jknb-root .tok-character { color: #50a14f; }
+.jknb-root .tok-number,
+.jknb-root .tok-bool,
+.jknb-root .tok-null { color: #986801; }
+.jknb-root .tok-typeName,
+.jknb-root .tok-className,
+.jknb-root .tok-namespace { color: #c18401; }
+.jknb-root .tok-functionName,
+.jknb-root .tok-labelName { color: #4078f2; }
+.jknb-root .tok-propertyName,
+.jknb-root .tok-attributeName { color: #e45649; }
+.jknb-root .tok-variableName { color: #383a42; }
+.jknb-root .tok-operator,
+.jknb-root .tok-derefOperator,
+.jknb-root .tok-arithmeticOperator,
+.jknb-root .tok-logicOperator,
+.jknb-root .tok-bitwiseOperator,
+.jknb-root .tok-compareOperator,
+.jknb-root .tok-updateOperator { color: #0184bc; }
+.jknb-root .tok-meta,
+.jknb-root .tok-punctuation,
+.jknb-root .tok-bracket { color: #383a42; }
+.jknb-root .tok-invalid { color: #ffffff; background: #e45649; }
+.jknb-root .tok-heading { color: #4078f2; font-weight: bold; }
+.jknb-root .tok-link { color: #0184bc; text-decoration: underline; }
+.jknb-root .tok-emphasis { font-style: italic; }
+.jknb-root .tok-strong { font-weight: bold; }
+.jknb-root .tok-strikethrough { text-decoration: line-through; }

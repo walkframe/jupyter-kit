@@ -24,6 +24,8 @@ coverage
 
 # nyc test coverage
 dist
+dist-publish
+packages/theme/themes
 .nyc_output
 
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
@@ -110,7 +112,10 @@ storybook-static/
 .DS_Store
 
 *storybook.log
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Astro (auto-generated content types / data store cache)
+.astro/

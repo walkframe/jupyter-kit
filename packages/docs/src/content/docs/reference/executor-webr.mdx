@@ -1,0 +1,104 @@
+---
+title: '@jupyter-kit/executor-webr'
+description: In-browser R executor — WebRExecutorOptions and security notes.
+---
+
+Runs R cells with [WebR](https://docs.r-wasm.org/webr/latest/) (WASM R
+interpreter) in a Web Worker. Exports `createWebRExecutor(options)`
+returning an [`Executor`](/reference/core/#executor).
+
+:::caution[GPL-2.0-or-later]
+WebR embeds the R interpreter and is GPL-2.0-or-later. Shipping it means
+your application may be subject to GPL terms. The rest of `@jupyter-kit`
+is Apache-2.0.
+:::
+
+## `WebRExecutorOptions`
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `src` | `string \| string[]` | `https://webr.r-wasm.org/latest/` | URL prefix for WebR's worker / WASM assets, or an ordered fallback list. Pin a version (e.g. `https://cdn.jsdelivr.net/npm/@r-wasm/webr@0.5.4/dist/`) for stability; pass `[primary, backup]` for CDN redundancy. |
+| `timeoutMs` | `number` | `10000` | Per-candidate init timeout. `0` disables. |
+| `packages` | `string[]` | `[]` | R packages installed via `webr_install` before any cell runs. |
+| `onStatus` | `(status, detail?) => void` | — | Progress callback. `status` is one of `'idle' \| 'loading' \| 'installing' \| 'running' \| 'ready' \| 'error'`. |
+
+## Usage
+
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { createWebRExecutor } from '@jupyter-kit/executor-webr';
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+import { StreamLanguage } from '@codemirror/language';
+import { r as rEditor } from '@codemirror/legacy-modes/mode/r';
+import { r } from '@jupyter-kit/core/langs/r';
+
+const executor = createWebRExecutor({
+  packages: ['ggplot2', 'dplyr'],
+});
+
+<Notebook
+  executor={executor}
+  plugins={[createEditorPlugin({
+    languages: { r: StreamLanguage.define(rEditor) },
+  })]}
+  languages={[r]}
+  language="r"
+  ipynb={nb}
+/>;
+```
+
+## How it works
+
+- Worker boots WebR from the CDN (first run installs ~40 MB of WASM and
+  base packages, browser-cached afterwards).
+- Each R cell runs with `captureR()`, collecting stdout / stderr /
+  messages + rendered plots.
+- Plots render to an `OffscreenCanvas` and are shipped back as PNG
+  data URLs (`image/png` output).
+
+## Security
+
+:::danger[Executing arbitrary code in visitors' browsers]
+`executor-webr` is opt-in code execution. Every R expression runs on the
+*visitor's* device with the visitor's network access, cookies, etc.
+:::
+
+Know this before shipping WebR on a public page:
+
+- **R has full filesystem + network APIs via WebR.** `download.file()`,
+  `httr::GET`, and `readLines(url)` all work. Cells can exfiltrate to any
+  CORS-permissive endpoint from the visitor's origin / IP.
+- **The WebAssembly worker is not a security sandbox.** It shares your
+  page's origin, cookies, and `localStorage`. Hostile cells can read
+  browser storage and `postMessage` to the main thread.
+- **Untrusted ipynbs run untrusted code.** If visitors upload `.ipynb`s,
+  every R expression in them executes. Treat the executor like a
+  remote-code-execution endpoint.
+- **GPL implications of shipping.** Beyond runtime security, remember
+  the licence: distributing a WebR-embedded page may trigger GPL
+  obligations (source availability of the aggregate). Consult counsel
+  if you ship behind a paywall / in a proprietary product.
+- **CDN pinning.** The default `src` (`webr.r-wasm.org/latest/`) is
+  a rolling pointer. Pin to a specific `@r-wasm/webr@x.y.z` release to
+  avoid silent runtime-binary upgrades.
+
+### Mitigation checklist
+
+- Add a CSP (`connect-src`, `worker-src`, `script-src`) that limits
+  what cells can reach.
+- Don't expose WebR on pages that also handle authenticated session
+  cookies — any cell can `download.file("/api/me")` and send the
+  response elsewhere.
+- Gate execution behind an explicit user action (click ▶) rather than
+  auto-run on mount when the notebook origin is untrusted.
+- Self-host the WebR distribution if you need subresource integrity —
+  the jsdelivr / r-wasm.org CDNs do not publish SRI hashes.
+
+### What the renderer itself does NOT protect against
+
+The DOMPurify / `rehype-sanitize` pipeline guards the **rendered output
+DOM** from XSS. It runs *after* the executor has already finished. That
+means anything R code does with `download.file` / `readLines` / WebR's
+direct DOM access (via `webr_call_js`) bypasses the renderer's sanitiser.
+See the [Pyodide security section](/reference/executor-pyodide/#security)
+for a parallel write-up — the same boundary applies.

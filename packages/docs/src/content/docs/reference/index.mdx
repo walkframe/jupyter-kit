@@ -1,0 +1,32 @@
+---
+title: Reference
+description: API reference for every @jupyter-kit package — options, types, and usage examples.
+---
+
+API reference for every `@jupyter-kit/*` package. Each page documents the
+options exposed by that package, how they plug into the renderer, and any
+non-obvious behaviour. The left sidebar lists them by layer:
+
+- **Core & framework wrappers** — the renderer engine and its official
+  React / Vue / Web Component bindings. Start here.
+- **Plugins** — opt-in extensions (editor, math, widgets). Each returns a
+  `Plugin` object that you pass to `<Notebook plugins={[…]} />`.
+- **Executors** — in-browser runtimes for edit-and-run. `executor-pyodide`
+  (Python) and `executor-webr` (R) — both read [their own security
+  caveats](#security-caveats-for-executors) before shipping.
+- **Themes** — chrome + syntax CSS bundles. No options; purely stylesheet
+  imports.
+
+## Security caveats for executors
+
+Anything that executes arbitrary source code in the visitor's browser
+changes the threat model of your site. Before embedding `executor-pyodide`
+or `executor-webr` on a public page, read the relevant reference page:
+
+- [Pyodide executor — security](/reference/executor-pyodide/#security)
+- [WebR executor — security](/reference/executor-webr/#security)
+
+The renderer itself (core + react / vue / wc) sanitises markdown and
+HTML/SVG outputs via DOMPurify + `rehype-sanitize` — see the
+[XSS security test](https://github.com/righ/react-ipynb-renderer/blob/master/packages/e2e/tests/xss.spec.ts)
+for the payloads it's verified against.

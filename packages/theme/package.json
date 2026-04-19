@@ -1,0 +1,49 @@
+{
+  "name": "@jupyter-kit/theme",
+  "version": "3.0.0-rc.0",
+  "private": true,
+  "description": "Source-of-truth for @jupyter-kit themes. Local workspace consumers import via subpaths; published packages (@jupyter-kit/theme-<chrome>, @jupyter-kit/theme-all) are generated under dist-publish/ by `pnpm run build`.",
+  "type": "module",
+  "exports": {
+    "./chrome/chesterish.css": "./themes/chrome/chesterish.css",
+    "./chrome/dark.css": "./themes/chrome/dark.css",
+    "./chrome/darkbronco.css": "./themes/chrome/darkbronco.css",
+    "./chrome/default.css": "./themes/chrome/default.css",
+    "./chrome/dorkula.css": "./themes/chrome/dorkula.css",
+    "./chrome/grade3.css": "./themes/chrome/grade3.css",
+    "./chrome/gruvboxd.css": "./themes/chrome/gruvboxd.css",
+    "./chrome/gruvboxl.css": "./themes/chrome/gruvboxl.css",
+    "./chrome/monokai.css": "./themes/chrome/monokai.css",
+    "./chrome/oceans16.css": "./themes/chrome/oceans16.css",
+    "./chrome/onedork.css": "./themes/chrome/onedork.css",
+    "./chrome/solarizedd.css": "./themes/chrome/solarizedd.css",
+    "./chrome/solarizedl.css": "./themes/chrome/solarizedl.css",
+    "./syntax/dracula.css": "./themes/syntax/dracula.css",
+    "./syntax/github-light.css": "./themes/syntax/github-light.css",
+    "./syntax/monokai.css": "./themes/syntax/monokai.css",
+    "./syntax/one-dark.css": "./themes/syntax/one-dark.css",
+    "./syntax/one-light.css": "./themes/syntax/one-light.css",
+    "./syntax/solarized-dark.css": "./themes/syntax/solarized-dark.css",
+    "./syntax/solarized-light.css": "./themes/syntax/solarized-light.css",
+    "./syntax/vsc-dark-plus.css": "./themes/syntax/vsc-dark-plus.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "node ./build.mjs",
+    "watch": "node ./watch.mjs",
+    "typecheck": "true",
+    "clean": "rm -rf themes dist-publish"
+  },
+  "devDependencies": {
+    "chokidar": "^4.0.0",
+    "esbuild": "^0.24.0",
+    "less": "^4.4.1"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/righ/react-ipynb-renderer.git",
+    "directory": "packages/theme"
+  }
+}

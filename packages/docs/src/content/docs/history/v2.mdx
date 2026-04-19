@@ -1,0 +1,111 @@
+---
+title: v2 — react-ipynb-renderer
+description: A bigger rewrite — remark/rehype markdown, themes, lifecycle hooks. Same React-only shape, but a much sturdier core.
+---
+
+v2 kept the same public entry point as v1 — a single `<IpynbRenderer>`
+React component — but rebuilt almost everything underneath. It's the
+version most v3 adopters are upgrading from.
+
+## Why v2 existed
+
+v1's markdown pipeline was built on `markdown-it`. That worked fine for
+plain prose cells but had two stubborn problems:
+
+- **Math extraction was fragile.** `$...$` / `$$...$$` inside markdown
+  ran through `markdown-it` before any math plugin could see it, and
+  escaping rules interacted badly with code spans. The `displayMath` /
+  `inlineMath` options existed in v1 but frequently didn't produce the
+  expected output.
+- **Raw HTML and markdown couldn't mix cleanly.** Jupyter notebooks
+  routinely embed hand-written HTML inside markdown cells (figures with
+  captions, collapsible sections, custom styling). `markdown-it`'s raw
+  HTML handling punted on nested structures.
+
+v2 moved to the **unified / remark / rehype** ecosystem — a tree-based
+pipeline where every stage operates on a real AST, not a string.
+
+## Feature timeline
+
+### 2.0.x — the pipeline rewrite
+
+The 2.0 headline was the markdown engine swap:
+
+- **`markdown-it` → `remark` + `rehype`**. Markdown becomes a unist tree;
+  remark plugins (for math, GFM, custom syntax) can rewrite nodes; then
+  `remark-rehype` converts to a hast tree; rehype plugins finalise the
+  HTML. This is the same stack used by MDX, by Docusaurus, and by the
+  v3 `@jupyter-kit/core` markdown pipeline today.
+- **`displayMath` / `inlineMath` actually work.** With math-node
+  extraction happening at the remark stage, the math options produce
+  consistent output for both KaTeX and MathJax.
+- **Option consolidation.** Several v1 options that had overlapped or
+  been superseded were merged or removed — the result was a smaller,
+  more orthogonal prop surface.
+- **Error-cell rendering.** Python tracebacks, IPython `SyntaxError`
+  frames, kernel-death messages — all got dedicated rendering (background
+  tint, preserved ANSI colours) instead of being dropped into the generic
+  stream output box.
+
+### 2.1.x — themes and polish
+
+Notebooks started looking less like "raw Jupyter in a React app" and
+more like first-class UI:
+
+- **Four built-in themes**: `default`, `dark`, `darkbronco`, `dorkula`.
+  Selectable via a prop — the component loaded the matching CSS itself.
+- **Double-click-selects-source.** Inside a code cell, a double click
+  highlighted the entire source block, making copy-paste to a real
+  Jupyter instance trivial.
+- **Empty-output cells hidden.** Cells with no outputs stopped rendering
+  an empty output box. Notebooks that had been re-authored (source
+  cleared and not re-run) looked tidier without post-processing the
+  JSON.
+
+### 2.2.x — lifecycle and housekeeping
+
+- **`onLoad` callback** — fired once the renderer finished its initial
+  render, so parent apps could scroll-to-top or resize their layout
+  without racing the async markdown pipeline.
+- **`ref` forwarding** — `useRef` on `<IpynbRenderer>` exposed the
+  underlying mount element. This was the first step toward imperative
+  access for plugins/extensions, which became the `RendererHandle` API
+  in v3.
+- Added E2E (Playwright) tests, ESLint rules, and PR / issue templates.
+  Not user-facing, but this is the maintenance baseline v3 inherited.
+
+## What v2 got right
+
+- **The unified pipeline.** Carried directly into v3's core unchanged.
+- **Theming as a concept.** The idea that "pick a notebook chrome,
+  separately pick a syntax theme" survived — v3 just exploded the
+  implementation from one bundled CSS file into independently-installable
+  packages.
+- **`onLoad` + `ref`.** Still present in `@jupyter-kit/react`.
+
+## What v2 still couldn't do
+
+- **React-only.** Vue / Web Component users still had to reinvent.
+- **Math engines were bundled by default.** A docs site with no math
+  still paid the MathJax bundle cost.
+- **No editing or execution.** v2 was a renderer, not an environment.
+
+All three limitations drove the v3 reshuffling.
+
+## Where to find v2 docs
+
+Archived alongside v1 at
+[docs.walkframe.com/react-ipynb-renderer/history](https://docs.walkframe.com/react-ipynb-renderer/history).
+
+## What carried over to v3
+
+| v2 feature | Status in v3 |
+|---|---|
+| remark / rehype markdown pipeline | Unchanged, inside `@jupyter-kit/core` |
+| `onLoad` callback | Unchanged, `@jupyter-kit/react` |
+| `ref` forwarding | Unchanged, exposes richer `RendererHandle` |
+| Built-in themes | Moved to `@jupyter-kit/theme-<name>` — one per chrome |
+| Bundled KaTeX / MathJax | Opt-in plugins (`@jupyter-kit/katex(-cdn)`, `…/mathjax(-cdn)`) |
+| `syntaxTheme` prop | Replaced by importing a syntax CSS file directly |
+
+Coming from v2? → [Migration guide](/history/migration-guide/).

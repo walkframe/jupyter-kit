@@ -1,0 +1,109 @@
+---
+title: v3 — @jupyter-kit
+description: Rewrite as a framework-agnostic monorepo with in-browser execution.
+---
+
+v3 is a ground-up rewrite that splits the library into independently
+installable packages and publishes them under a new npm scope
+(`@jupyter-kit/*`). The GitHub repository name still reflects the library's
+origin as `react-ipynb-renderer`.
+
+## From one package to many
+
+| Before (v2, `react-ipynb-renderer`) | After (v3, `@jupyter-kit/*`) |
+|---|---|
+| Single npm package | ~14 packages under `@jupyter-kit/*` |
+| Renderer coupled to React | Framework-agnostic core; thin wrappers for React, Vue, Web Components |
+| MathJax / KaTeX bundled into the component | `@jupyter-kit/katex` / `@jupyter-kit/mathjax` — and CDN variants (~2 KB) |
+| Prism for syntax highlighting | Lezer parsers — tree-shakable, per-language |
+| Themes shipped as a bag of CSS | One npm package per chrome, each carrying all syntax themes |
+| Read-only only | Optional in-browser editing and execution |
+
+## The big shifts
+
+### 1. Core no longer needs React
+
+`@jupyter-kit/core` renders to plain DOM. You can use it from:
+
+- **React** — via `@jupyter-kit/react` (a `<Notebook>` component)
+- **Vue** — via `@jupyter-kit/vue` (same component idea, Vue 3 flavor)
+- **Web Components / vanilla JS** — via `@jupyter-kit/wc` (`<jk-notebook>`)
+- **Nothing at all** — call `createRenderer().mount(el, notebook)` directly
+
+React is an integration choice now, not a prerequisite.
+
+### 2. KaTeX and MathJax are optional — and optionally CDN-hosted
+
+Math rendering used to be bundled into the component, which dragged a big
+engine into every consumer's bundle whether they had math cells or not.
+v3 splits it four ways:
+
+| Package | Install when |
+|---|---|
+| `@jupyter-kit/katex` | You render math and want KaTeX bundled (~70 KB gz) |
+| `@jupyter-kit/katex-cdn` | Same, but fetch KaTeX from a CDN at runtime (~2 KB gz) |
+| `@jupyter-kit/mathjax` | You need full LaTeX compatibility (~700 KB gz) |
+| `@jupyter-kit/mathjax-cdn` | Same, but from a CDN (~2 KB gz) |
+
+Don't render math? Install none of them.
+
+### 3. Notebooks are editable and executable in the browser
+
+The original library was a *viewer*. v3 adds:
+
+- **`@jupyter-kit/editor-codemirror`** — inline cell editing, per-cell
+  toolbar, Shift+Enter to run. CodeMirror modules are peer deps so you
+  control their versions.
+- **`@jupyter-kit/executor-pyodide`** — runs Python cells inside a
+  dedicated Web Worker via [Pyodide](https://pyodide.org).
+- **`@jupyter-kit/executor-webr`** — runs R cells via
+  [WebR](https://webr.r-wasm.org), capturing plots inline as PNG.
+
+Both executors run entirely on the client — cell source is never sent to a
+server. The Pyodide / WebR runtimes themselves are fetched from a CDN on
+first use and cached by the browser.
+
+See the [Pyodide demo](/demos/pyodide/) and [WebR demo](/demos/webr/).
+
+### 4. Themes are published as a per-chrome grid
+
+v2 shipped one theme package with everything bundled. v3 publishes one
+package per chrome, each carrying every syntax theme under `./syntax/*.css`:
+
+```sh
+pnpm add @jupyter-kit/theme-default
+pnpm add @jupyter-kit/theme-monokai
+pnpm add @jupyter-kit/theme-gruvboxd
+# ...13 chromes in total
+
+# Or install everything at once:
+pnpm add @jupyter-kit/theme-all
+```
+
+You install what you actually use. See the
+[theme switcher demo](/demos/themes/) for what's available.
+
+### 5. Prism → Lezer
+
+Syntax highlighting now uses the [Lezer](https://lezer.codemirror.net/)
+parsers behind CodeMirror 6. Prism is gone entirely. Benefits:
+
+- **Single highlighter for view and edit.** The same parser that powers
+  the static pre-rendered code spans is the one the CodeMirror editor uses
+  when a cell becomes editable — consistent colors, no double-bundling.
+- **Per-language imports.** Only Python ships with core; other languages
+  are peer deps so you install exactly what your notebooks use.
+
+## What stayed the same
+
+- `.ipynb` input format (both cell v4 and legacy `worksheets[0].cells`).
+- Output rendering semantics: stream, execute_result, display_data, error
+  — all the standard MIME types including `text/html`, `text/latex`,
+  `image/png`, `image/svg+xml`.
+- Same default sanitization via DOMPurify (with MathJax-compatible `<use>`
+  allow-listing).
+- Apache-2.0 license for everything except `@jupyter-kit/executor-webr`,
+  which is GPL-2.0-or-later because it links against the R interpreter
+  via WebR.
+
+Coming from v1 or v2? → [Migration guide](/history/migration-guide/).

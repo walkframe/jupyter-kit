@@ -1,0 +1,40 @@
+{
+  "name": "@jupyter-kit/executor-pyodide",
+  "version": "3.0.0-rc.0",
+  "description": "In-browser Python executor for @jupyter-kit. Loads Pyodide from a CDN (the runtime is ~10MB WASM, so bundling isn't practical).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@jupyter-kit/comm": "workspace:*",
+    "@jupyter-kit/editor-codemirror": "workspace:*"
+  },
+  "peerDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/righ/react-ipynb-renderer.git",
+    "directory": "packages/executor-pyodide"
+  }
+}

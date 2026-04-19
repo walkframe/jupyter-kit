@@ -1,0 +1,63 @@
+---
+title: '@jupyter-kit/editor-codemirror'
+description: CodeMirror 6 editor plugin — EditorCodemirrorOptions.
+---
+
+CodeMirror 6 editor plugin. Replaces static `<pre>` code displays with a
+live editor per code cell. Adds a cell toolbar (run / add / delete).
+
+`createEditorPlugin()` is installed transitively by both
+`@jupyter-kit/executor-pyodide` and `@jupyter-kit/executor-webr` — you
+only install it directly if you want editable cells without an executor.
+
+## `EditorCodemirrorOptions`
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `languages` | `Record<string, Extension>` | `{}` | Per-language CodeMirror extensions. Keys match cell language strings; `'*'` is fallback. Example: `{ python: python() }`. |
+| `extensions` | `Extension[]` | `[]` | Extra extensions applied to every editor (theme, keymap, linting …). |
+| `readOnly` | `boolean` | `false` | Render editors as read-only. Hides the Run / Add / Delete toolbar. |
+| `lineNumbers` | `boolean` | `false` | Show gutter line numbers. |
+| `fontFamily` | `string` | ui-monospace stack | Editor font. |
+| `fontSize` | `string` | `'inherit'` | CSS font-size value. |
+| `backgroundColor` | `string` | `'transparent'` | Editor background. |
+| `focusBorderColor` | `string` | semi-transparent blue | Left border when focused. |
+| `inactiveBorderColor` | `string` | `'transparent'` | Left border when blurred. |
+| `runButton` | `boolean` | `true` | Show the ▶ run button (only when `executor` is set). |
+| `runLabel` | `string` | `'Run (Shift+Enter)'` | Tooltip for the run button. |
+
+## Usage
+
+```tsx
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+import { python } from '@codemirror/lang-python';
+import { StreamLanguage } from '@codemirror/language';
+import { r } from '@codemirror/legacy-modes/mode/r';
+import { EditorView } from '@codemirror/view';
+
+const plugin = createEditorPlugin({
+  languages: {
+    python: python(),
+    r: StreamLanguage.define(r),
+  },
+  extensions: [EditorView.lineWrapping],
+  lineNumbers: true,
+});
+```
+
+## Keybindings
+
+| Keys | Effect |
+|---|---|
+| `Shift+Enter` | Run the current cell and focus the next code cell. |
+| `Cmd/Ctrl+Z` / `Shift+Cmd/Ctrl+Z` | Undo / redo (within a cell). |
+| `Cmd/Ctrl+S` | Download the notebook (see [onSave](/reference/core/#rendereroptions)). |
+
+## Toolbar buttons
+
+Visible on hover / focus of a code cell:
+
+- **▶ Run** — runs the cell via `ctx.executor?.rerun`. Only rendered when
+  an executor is present and `runButton: true`.
+- **+ Add cell below** — inserts an empty cell of the same type.
+- **🗑 Delete cell** — removes the cell.

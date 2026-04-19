@@ -1,0 +1,79 @@
+---
+title: '@jupyter-kit/comm'
+description: Jupyter Comm protocol types.
+---
+
+Shared TypeScript interfaces used by executors that want to support
+Jupyter Comm traffic (ipywidgets etc.) and plugins that consume it.
+
+**Types only, no runtime code.** Installing this package doesn't add a
+single byte to your bundle; it just gives you the contract so a custom
+executor can light up `@jupyter-kit/widgets`.
+
+## Exports
+
+- `CommProvider` — executor-side bridge. Expose one on
+  `Executor.commProvider` to support comms.
+- `Comm` — single comm channel. Shape matches `IClassicComm` from
+  `@jupyter-widgets/base`, so you can hand an instance directly to a
+  widget manager.
+- `CommOpenMsg`, `CommMsg`, `CommOpenHandler`, `CommCallbacks`,
+  `CommBuffers`, `JSONValue` — helper types.
+
+## `CommProvider`
+
+```ts
+export interface CommProvider {
+  /** Frontend-initiated comm. Returns once registered on both sides. */
+  createComm(targetName: string, commId?: string): Promise<Comm>;
+
+  /** Subscribe to kernel-initiated opens (e.g. `'jupyter.widget'`).
+      Returns a disposer. */
+  onCommOpen(targetName: string, handler: CommOpenHandler): () => void;
+
+  /** Snapshot of live comms. Some widget managers call this during
+      `_get_comm_info` to restore state after a reload. */
+  listComms(targetName?: string): Promise<Record<string, { target_name: string }>>;
+}
+```
+
+## `Comm`
+
+```ts
+export interface Comm {
+  readonly comm_id: string;
+  readonly target_name: string;
+  open(data: JSONValue, callbacks?: CommCallbacks, metadata?: object, buffers?: CommBuffers): string;
+  send(data: JSONValue, callbacks?: CommCallbacks, metadata?: object, buffers?: CommBuffers): string;
+  close(data?: JSONValue, callbacks?: CommCallbacks, metadata?: object, buffers?: CommBuffers): string;
+  on_msg(cb: (msg: CommMsg) => void): void;
+  on_close(cb: (msg: CommMsg) => void): void;
+}
+```
+
+## Implementing an executor
+
+Attach a `CommProvider` to your `Executor` instance so
+[`@jupyter-kit/widgets`](/reference/widgets/) picks it up automatically:
+
+```ts
+import type { Executor } from '@jupyter-kit/core';
+import type { CommProvider } from '@jupyter-kit/comm';
+
+export function createMyExecutor(): Executor {
+  const commProvider: CommProvider = {
+    createComm: async (targetName, commId) => { /* … */ },
+    onCommOpen: (targetName, handler) => () => { /* unsubscribe */ },
+    listComms: async () => ({}),
+  };
+
+  return {
+    commProvider,
+    async execute(source, language, signal) { /* … */ },
+  };
+}
+```
+
+Reference implementation: see how
+[`executor-pyodide`](https://github.com/righ/react-ipynb-renderer/blob/master/packages/executor-pyodide/src/index.ts)
+bridges the Pyodide worker's postMessage stream to this interface.

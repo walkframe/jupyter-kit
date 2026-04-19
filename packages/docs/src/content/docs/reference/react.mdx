@@ -1,0 +1,54 @@
+---
+title: '@jupyter-kit/react'
+description: React component reference — <Notebook /> props.
+---
+
+React wrapper — an `<Notebook>` component that mounts
+`createRenderer()` inside a React tree. All options from
+[`@jupyter-kit/core`](/reference/core/#rendereroptions) are exposed as
+props, with a few additions.
+
+## `<Notebook>` props
+
+| Prop | Type | Required | Notes |
+|---|---|:---:|---|
+| `ipynb` | `Ipynb` | ✓ | The parsed notebook to render. Parse JSON yourself (`JSON.parse(text)`) before passing. |
+| `plugins` | `Plugin[]` | — | Same as `RendererOptions.plugins`. |
+| `executor` | `Executor` | — | Same as `RendererOptions.executor`. |
+| `language` | `string` | — | Fallback cell language. Default `'python'`. |
+| `languages` | `LanguageDef[]` | — | Lezer parsers. |
+| `htmlFilter` | `HtmlFilter` | — | Replace the default sanitiser. |
+| `onSave` | `SaveHandler` | — | Override Ctrl/Cmd+S. |
+| `bgTransparent` | `boolean` | — | Default `true`. |
+| `seqAsExecutionCount` | `boolean` | — | Default `false`. |
+| `className` | `string` | — | Extra class on the root. |
+| `filename` | `string` | — | Default `'notebook.ipynb'`. |
+| `mathAlign` | `'left' \| 'center' \| 'right'` | — | Default `'left'`. |
+| `onReady` | `(handle: RendererHandle) => void` | — | Fires once after mount. Stash the handle for imperative calls (`.update()`, `.cell(i)`, …). |
+
+## Usage
+
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { python } from '@jupyter-kit/core/langs/python';
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+
+<Notebook
+  ipynb={notebook}
+  language="python"
+  languages={[python]}
+/>;
+```
+
+## Peer dependencies
+
+`react` ≥ 16.9, `react-dom` ≥ 16.9. Works under strict mode and in
+Suspense — the component mounts once on the client.
+
+## SSR / RSC
+
+The renderer touches the DOM (CodeMirror, sanitizers, plugins), so it's
+client-only. In Next.js App Router / React Server Components, wrap in a
+`'use client'` boundary or dynamic-import with `{ ssr: false }`. In Astro,
+use `client:only="react"`.

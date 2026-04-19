@@ -1,0 +1,34 @@
+---
+title: '@jupyter-kit/vue'
+description: Vue 3 component reference — <Notebook /> props.
+---
+
+Vue 3 wrapper. Same semantic props as
+[`@jupyter-kit/react`](/reference/react/#ipynbrenderer-props) — see that
+page for the full table; Vue exposes them as reactive props on the same
+`<Notebook>` tag.
+
+```vue
+<script setup lang="ts">
+import { Notebook } from '@jupyter-kit/vue';
+import { python } from '@jupyter-kit/core/langs/python';
+import notebook from './my.ipynb';
+
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+</script>
+
+<template>
+  <Notebook
+    :ipynb="notebook"
+    language="python"
+    :languages="[python]"
+  />
+</template>
+```
+
+## Peer dependencies
+
+`vue` ≥ 3.3. Works with `<script setup>` and Options API. Re-renders when
+any prop identity changes — pass the notebook as a `ref` if you want to
+swap it imperatively.

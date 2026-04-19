@@ -1,0 +1,405 @@
+// Classic Jupyter (nbconvert default) styling — self-contained.
+// No inheritance from grade3.less or jupyter-themes layout.
+
+// Display-math alignment driven by `data-math-align` on the root.
+.jknb-root[data-math-align="left"] {
+  .katex-display, mjx-container[display="true"] {
+    display: block;
+    text-align: left;
+    margin-left: 0;
+    margin-right: auto;
+  }
+}
+.jknb-root[data-math-align="center"] {
+  .katex-display, mjx-container[display="true"] {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+.jknb-root[data-math-align="right"] {
+  .katex-display, mjx-container[display="true"] {
+    display: block;
+    text-align: right;
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
+
+@jp-fontfamily:       "Helvetica Neue", Arial, "Hiragino Sans", "Noto Sans JP", sans-serif;
+@jp-mono:             ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+@jp-text-color:       #000000;
+@jp-page-bg:          #ffffff;
+@jp-input-bg:         #f7f7f7;
+@jp-input-border:     #cfcfcf;
+@jp-input-prompt:     #303F9F;
+@jp-output-prompt:    #D84315;
+@jp-error-bg:         #fdd;
+@jp-prompt-width:     80px;
+
+.jknb-root {
+  font-family: @jp-fontfamily;
+  color: @jp-text-color;
+  background: @jp-page-bg;
+  padding: 5px 10px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+
+  // --- Defensive containment --------------------------------------------
+  // Apply `border-box` only to the notebook's own structural containers so
+  // long code/tables don't escape their column. Leaving widget subtrees
+  // alone lets `@jupyter-widgets/controls` sliders use the box-sizing their
+  // own stylesheet assumes (mixed border-box/content-box).
+  .cell,
+  .input,
+  .output,
+  .inner_cell,
+  .input_area,
+  .output_area,
+  .output_subarea,
+  .output_wrapper,
+  .rendered_html,
+  .prompt,
+  pre,
+  code,
+  table, thead, tbody, tr, th, td {
+    box-sizing: border-box;
+  }
+
+  @import "./_widget-patch.less";
+
+  max-width: 100%;
+  min-width: 0;
+
+  .cell,
+  .input,
+  .output,
+  .inner_cell,
+  .input_area,
+  .output_area,
+  .output_subarea,
+  .rendered_html {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  pre, code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .output_subarea {
+    overflow-x: auto;
+  }
+  img, svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .cm-editor,
+  .cm-scroller {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .cm-editor {
+    width: 100%;
+  }
+
+  // See base.less for rationale — host-page selectors inject `margin-top`
+  // onto every sibling inside `.sl-markdown-content` / typography plugins.
+  .cm-editor, .cm-scroller, .cm-content, .cm-line, .cm-gutters, .cm-gutter, .cm-gutterElement,
+  .cell_toolbar, .cell_toolbar_btn,
+  .prompt, .input_prompt, .output_prompt, .out_prompt_overlay,
+  .input, .output, .output_area, .output_subarea, .output_wrapper,
+  .inner_cell, .input_area, .text_cell_render {
+    margin: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  table, thead, tbody, tr, th, td,
+  .rendered_html h1, .rendered_html h2, .rendered_html h3, .rendered_html h4,
+  .rendered_html h5, .rendered_html h6,
+  .rendered_html th, .rendered_html td {
+    color: inherit;
+  }
+  // ----------------------------------------------------------------------
+
+  pre, code {
+    font-family: @jp-mono;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  pre {
+    margin: 0;
+    padding: 4px 8px;
+    white-space: pre;
+    background: transparent;
+    color: inherit;
+    border: none;
+  }
+
+  .cell {
+    margin: 4px 0;
+    // Border colour matches the page background so the cell blends into
+    // the page in its idle state. `:focus-within` swaps it to the accent
+    // colour without a layout shift (border width stays 3px).
+    border-left: 3px solid @jp-page-bg;
+    padding-left: 4px;
+    transition: border-left-color 120ms ease;
+  }
+  .cell:focus-within {
+    border-left-color: rgba(33, 150, 243, 0.6);
+  }
+
+  // CodeMirror caret matches the theme foreground so it stays visible.
+  .cm-editor .cm-content {
+    caret-color: @jp-text-color;
+  }
+  .cm-editor .cm-cursor,
+  .cm-editor .cm-cursor-primary {
+    border-left-color: @jp-text-color;
+  }
+
+  .input {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .prompt {
+    width: @jp-prompt-width;
+    min-width: @jp-prompt-width;
+    padding: 4px 8px 0 0;
+    text-align: right;
+    font-family: @jp-mono;
+    font-size: 13px;
+    font-weight: normal;
+    color: #999;
+    user-select: none;
+  }
+
+  .input_prompt {
+    color: @jp-input-prompt;
+  }
+  .output_prompt {
+    color: @jp-output-prompt;
+  }
+
+  .inner_cell {
+    flex: 1;
+    min-width: 0;
+    // Host layouts (e.g. Starlight grid rows) can apply a height on children,
+    // which combined with `overflow: auto` causes a spurious scrollbar from a
+    // 1px rounding mismatch. `.cm-scroller` / `pre` already handle horizontal
+    // overflow of code, so this wrapper can stay visible.
+    overflow: visible;
+  }
+
+  .input_area {
+    background: @jp-input-bg;
+    border: 1px solid @jp-input-border;
+    border-radius: 2px;
+    // Shared font-size so editor and static-highlight pre render the same.
+    // Both `<pre>` (read-only) and `.cm-editor` (editable) inherit from here.
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  // Cell toolbar (run button etc.) overlays the top-right of the code area.
+  .highlight {
+    position: relative;
+  }
+  .cell_toolbar {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 4px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .highlight:hover .cell_toolbar,
+  .highlight:focus-within .cell_toolbar {
+    opacity: 1;
+  }
+  .cell_toolbar_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid rgba(127, 127, 127, 0.25);
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #555;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+  .cell_toolbar_btn:hover {
+    background: rgba(127, 127, 127, 0.15);
+    border-color: rgba(127, 127, 127, 0.5);
+    color: #111;
+  }
+  .cell_toolbar_btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+  .cell_toolbar_run {
+    color: #2e7d32;
+  }
+  .cell_toolbar_run:hover {
+    background: rgba(46, 125, 50, 0.12);
+    border-color: rgba(46, 125, 50, 0.5);
+    color: #1b5e20;
+  }
+  .cell_toolbar_delete:hover {
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.5);
+    color: #b91c1c;
+  }
+
+  // Markdown cell content: no box, flows like the page.
+  .text_cell_render {
+    padding: 4px 0;
+    h1, h2, h3, h4, h5, h6 {
+      margin: 12px 0 8px;
+      line-height: 1.3;
+    }
+    h1 { font-size: 26px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+    h4 { font-size: 16px; }
+    p { margin: 6px 0; }
+    ul, ol { padding-left: 24px; margin: 6px 0; }
+    pre {
+      padding: 8px;
+      background: @jp-input-bg;
+      border: 1px solid @jp-input-border;
+      border-radius: 2px;
+    }
+    code {
+      padding: 1px 4px;
+      background: rgba(127, 127, 127, 0.1);
+      border-radius: 2px;
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+    }
+    blockquote {
+      margin: 6px 0;
+      padding: 0 12px;
+      border-left: 4px solid #cfcfcf;
+      color: #555;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+    thead {
+      background: rgba(127, 127, 127, 0.1);
+      border-bottom: 2px solid rgba(127, 127, 127, 0.5);
+    }
+    th {
+      padding: 6px 10px;
+      font-weight: 600;
+      text-align: left;
+      border: 1px solid rgba(127, 127, 127, 0.25);
+    }
+    td {
+      padding: 5px 10px;
+      border: 1px solid rgba(127, 127, 127, 0.25);
+    }
+    tbody tr:nth-child(even) {
+      background: rgba(127, 127, 127, 0.06);
+    }
+    tbody tr:hover {
+      background: rgba(66, 165, 245, 0.1);
+    }
+    a {
+      color: @jp-input-prompt;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  // Pandas DataFrame — classic Jupyter look.
+  table.dataframe {
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: inherit;
+
+    thead {
+      border-bottom: 1px solid currentColor;
+      vertical-align: bottom;
+    }
+
+    tr, th, td {
+      text-align: right;
+      vertical-align: middle;
+      padding: 4px 8px;
+      line-height: normal;
+      white-space: normal;
+      max-width: none;
+      border: none;
+    }
+
+    th {
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(127, 127, 127, 0.06);
+    }
+    tbody tr:hover {
+      background: rgba(66, 165, 245, 0.15);
+    }
+  }
+
+  .output_wrapper .output {
+    .output_area {
+      display: flex;
+      padding: 0;
+    }
+    // Unified padding for stdout, stderr, and error: outer wrapper handles
+    // the inset, inner <pre> contributes nothing extra so both shapes match.
+    .output_subarea {
+      flex: 1;
+      min-width: 0;
+      padding: 4px 8px;
+    }
+    .output_text pre,
+    .output_error pre {
+      margin: 0;
+      padding: 0;
+      white-space: pre-wrap;
+    }
+    // stderr distinguishes from stdout with a soft red wash (matches Jupyter).
+    // Negative-then-positive padding lets the background span the full width
+    // while the text keeps the same horizontal inset as stdout.
+    .output_stream.output_stderr,
+    .output-stderr {
+      background: rgba(255, 0, 0, 0.18);
+      pre {
+        background: transparent;
+      }
+    }
+    .output_error {
+      // Same wash as stderr so all error-ish output reads as one family.
+      background: rgba(255, 0, 0, 0.18);
+      white-space: pre-wrap;
+    }
+    .output_png img,
+    .output_jpeg img,
+    .output_gif img,
+    .output_svg svg {
+      max-width: 100%;
+    }
+  }
+}

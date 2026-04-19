@@ -1,0 +1,42 @@
+{
+  "name": "@jupyter-kit/katex",
+  "version": "3.0.0-rc.0",
+  "description": "KaTeX (bundled) plugin for @jupyter-kit/core. Renders TeX via rehype-katex during markdown processing.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "dependencies": {
+    "katex": "^0.16.9",
+    "remark-math": "^6.0.0",
+    "rehype-katex": "^7.0.1"
+  },
+  "devDependencies": {
+    "@jupyter-kit/core": "workspace:*",
+    "@types/katex": "^0.16.7"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/righ/react-ipynb-renderer.git",
+    "directory": "packages/katex"
+  }
+}

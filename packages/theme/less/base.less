@@ -1,0 +1,386 @@
+@import "./variables.less";
+
+// Display-math alignment driven by `data-math-align` on the root. Targets both
+// MathJax (`mjx-container[display="true"]`) and KaTeX (`.katex-display`).
+.jknb-root[data-math-align="left"] {
+  .katex-display, mjx-container[display="true"] {
+    display: block;
+    text-align: left;
+    margin-left: 0;
+    margin-right: auto;
+  }
+}
+.jknb-root[data-math-align="center"] {
+  .katex-display, mjx-container[display="true"] {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+.jknb-root[data-math-align="right"] {
+  .katex-display, mjx-container[display="true"] {
+    display: block;
+    text-align: right;
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
+
+.jknb-root {
+  // Pin a notebook font-size that doesn't inherit from the host page
+  // (Starlight / Docusaurus body is typically 16-17px, which makes code +
+  // prose read too large compared to classic Jupyter).
+  font-size: 14px;
+  // Jupyter-themes sets its foreground colour on `.jknb-root body` (requires a
+  // <body> descendant that we don't render) — so the root container itself
+  // has no color, and browser default `black` propagates to any descendant
+  // that does `color: inherit` (e.g. the widget-readout numbers). Pin the
+  // theme's notebook foreground directly on the root so inheritance works
+  // for widgets / host-bridged elements too.
+  color: @notebook-fg;
+
+  @import "./jupyter-themes/jupyterthemes/layout/notebook.less";
+  @import "./jupyter-themes/jupyterthemes/layout/extras.less";
+  @import "./jupyter-themes/jupyterthemes/layout/cells.less";
+  @import "./jupyter-themes/jupyterthemes/layout/codemirror.less";
+
+  // --- Defensive containment --------------------------------------------
+  // Protect the renderer from host-page CSS that might be using
+  // `box-sizing: content-box` or narrow-column layouts. Without these, long
+  // code lines or wide outputs (dataframes, tracebacks) push past the
+  // container's right edge — notably inside Starlight / docs layouts with
+  // constrained content widths.
+  &, &::before, &::after,
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  @import "./_widget-patch.less";
+  max-width: 100%;
+  min-width: 0;
+
+  .cell,
+  .input,
+  .output,
+  .inner_cell,
+  .input_area,
+  .output_area,
+  .output_subarea,
+  .rendered_html {
+    max-width: 100%;
+    // Required for flex children to actually shrink below their intrinsic
+    // content width. Without it, long tokens force overflow.
+    min-width: 0;
+  }
+
+  // Long code, stderr, tracebacks — scroll horizontally inside the cell
+  // instead of blowing out the notebook width.
+  pre, code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  // Wide outputs (dataframes, images, SVG) scroll their own block.
+  .output_subarea {
+    overflow-x: auto;
+  }
+  // Images stay inside their cell.
+  img, svg {
+    max-width: 100%;
+    height: auto;
+  }
+  // CodeMirror 6: `.cm-content` grows to fit the longest line and won't
+  // shrink unless the ancestor flex chain explicitly allows it.
+  // - `min-width: 0` on the editor + its flex ancestors lets flexbox shrink
+  //   them below intrinsic content width.
+  // - `.cm-scroller` keeps `overflow: auto` so long lines scroll inside.
+  .cm-editor,
+  .cm-scroller {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .cm-editor {
+    width: 100%;
+  }
+
+  // Host-page selectors like Starlight's `.sl-markdown-content > * + *` inject
+  // `margin-top: 1rem` on every sibling. In CodeMirror that pushes each line
+  // down, in the toolbar it breaks the row into a staircase. Reset margin/
+  // padding on anything the host wouldn't recognise as their own content.
+  .cm-editor, .cm-scroller, .cm-content, .cm-line, .cm-gutters, .cm-gutter, .cm-gutterElement,
+  .cell_toolbar, .cell_toolbar_btn,
+  .prompt, .input_prompt, .output_prompt, .out_prompt_overlay,
+  .input, .output, .output_area, .output_subarea, .output_wrapper,
+  .inner_cell, .input_area, .text_cell_render {
+    margin: 0;
+  }
+
+  // jupyter-themes/cells.less sets `div.input_area { padding-right: 1.2em }`
+  // which creates a ~20px dead zone on the right edge of every code cell.
+  // The editor / `<pre>` inside already contribute their own horizontal
+  // inset, so drop the right padding — otherwise cells look like they stop
+  // short of the cell frame. Match the `div.` qualifier so our rule has
+  // equal specificity and wins on cascade order.
+  // Square off the input box — no rounded corners. jupyter-themes rounds
+  // both `.input_area` and its outer `.input` wrapper, so flatten both.
+  div.input_area {
+    padding: 0;
+    border-radius: 0;
+  }
+  div.cell.code_cell .input {
+    border-radius: 0;
+  }
+
+  // CodeMirror caret: inherit the theme's foreground colour so the
+  // blinking text cursor stays visible on dark chromes (default CodeMirror
+  // draws black, which disappears on dark input-bg).
+  .cm-editor .cm-content {
+    caret-color: @notebook-fg;
+  }
+  .cm-editor .cm-cursor,
+  .cm-editor .cm-cursor-primary {
+    border-left-color: @notebook-fg;
+  }
+
+  // Host-page heading/table color rules (Starlight, Docusaurus, Tailwind
+  // typography) override the theme's text colour. Force headings + table
+  // cells + rendered markdown to inherit so the theme stays in control.
+  h1, h2, h3, h4, h5, h6,
+  table, thead, tbody, tr, th, td,
+  .rendered_html h1, .rendered_html h2, .rendered_html h3, .rendered_html h4,
+  .rendered_html h5, .rendered_html h6,
+  .rendered_html th, .rendered_html td {
+    color: inherit;
+  }
+  // ----------------------------------------------------------------------
+
+  // jupyter-themes/cells.less forces `div.cell { background: @cc-input-bg;
+  // border: medium solid @notebook-bg }`. That paints every cell as a
+  // distinct `@cc-input-bg` box floating on `@notebook-bg` — visually
+  // boxy in light-ish themes (grade3 etc.) where the two colours differ.
+  // Override with the same `div.cell` specificity so the cell's own
+  // background and border blend into the notebook background; only
+  // `.input_area` keeps the darker input-bg for the code area.
+  div.cell {
+    margin: 5px 0;
+    background: @notebook-bg;
+    background-color: @notebook-bg;
+    // Border colour matches the input area background (`@cc-input-bg`)
+    // so the cell frame visually extends the input box rather than
+    // sitting on the page background. Keep `medium` width (≈3px, same
+    // as jupyter-themes default) so focus-within switches colour only —
+    // no layout shift from a border-width jump.
+    border: medium solid @cc-input-bg;
+    border-radius: 4px;
+    transition: border-color 120ms ease;
+  }
+  div.cell:focus-within {
+    border-color: @prompt-line;
+  }
+
+  // Cell toolbar (run / duplicate / delete icons). Overlays the top-right
+  // corner of the highlight container instead of flowing below the code.
+  // Defined here so every chrome theme inherits the positioning; only
+  // default.less defined it before, leaving other themes with the toolbar
+  // stacked underneath the cell.
+  .highlight {
+    position: relative;
+  }
+  .cell_toolbar {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 4px;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .highlight:hover .cell_toolbar,
+  .highlight:focus-within .cell_toolbar {
+    opacity: 1;
+  }
+  .cell_toolbar_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid rgba(127, 127, 127, 0.35);
+    border-radius: 3px;
+    background: rgba(127, 127, 127, 0.15);
+    color: inherit;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+  .cell_toolbar_btn:hover {
+    background: rgba(127, 127, 127, 0.3);
+    border-color: rgba(127, 127, 127, 0.6);
+  }
+  .cell_toolbar_btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+  .cell_toolbar_run {
+    color: #4caf50;
+  }
+  .cell_toolbar_run:hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: rgba(76, 175, 80, 0.6);
+  }
+  .cell_toolbar_delete:hover {
+    background: rgba(239, 83, 80, 0.2);
+    border-color: rgba(239, 83, 80, 0.6);
+    color: #e57373;
+  }
+  pre {
+    margin: 0;
+    // jupyter-themes' `cells.less` slaps a border+bg on every `<pre>` (a
+    // Bootstrap-era "code block frame" convention). In our tree the input
+    // area has its own `.input_area` box and outputs rely on bg + monospace
+    // for separation, so that extra frame is redundant around stream output
+    // and markdown code. Kill the border; background stays.
+    border: none;
+    code {
+      display: inline;
+    }
+  }
+  .input {
+    display: flex;
+    flex-direction: row;
+    & > .inner_cell {
+      // `overflow: auto` was classic-Jupyter's way of scrolling long code,
+      // but it plays badly with host layouts that set heights on children
+      // (Starlight's grid rows) — a 1px rounding mismatch makes a spurious
+      // scrollbar appear. Horizontal overflow is now handled by `.cm-scroller`
+      // and `pre` themselves, so this wrapper can stay `visible`.
+      overflow: visible;
+    }
+  }
+  div.output_area {
+    display: flex;
+  }
+  div.output_latex {
+    color: #888888;
+  }
+  div.inner_cell {
+    width: 100%;
+  }
+  div.output_error {
+    white-space: pre;
+  }
+  // Unified output block: outer subarea owns the inset, inner <pre> is flush.
+  // Without this, the jupyter-themes layers set `padding: 0 !important` on
+  // stream cells while execute_result still gets its own padding — the two
+  // end up misaligned across every theme.
+  div.output_subarea {
+    padding: 4px 8px !important;
+    margin-left: 0 !important;
+
+    pre {
+      margin: 0;
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    code {
+      background: transparent !important;
+    }
+
+    &.output_error,
+    &.output_text.output_stream.output_stderr,
+    &.output-stderr {
+      background: rgba(255, 0, 0, 0.18);
+    }
+  }
+
+  .inner_cell {
+    .rendered_html {
+      h1 {
+        line-height: 1.5;
+      }
+      h2 {
+        line-height: 1.4;
+      }
+      h3 {
+        line-height: 1.3;
+      }
+      h4 {
+        line-height: 1;
+      }
+      h1, h2, h3, h4 {
+        margin-left: 0 !important;
+      }
+    }
+  }
+
+  // Markdown-rendered tables — distinct header + zebra body rows. Uses
+  // rgba so it adapts to light / dark themes without per-theme overrides.
+  // Scoped to the markdown render so it doesn't touch `table.dataframe`
+  // (which has its own styling below) or widget-rendered tables.
+  .text_cell_render table,
+  .rendered_html > table,
+  .rendered_html p + table {
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+
+    thead {
+      background: rgba(127, 127, 127, 0.12);
+      border-bottom: 2px solid rgba(127, 127, 127, 0.5);
+    }
+    th {
+      padding: 6px 10px;
+      font-weight: 600;
+      text-align: left;
+      border: 1px solid rgba(127, 127, 127, 0.25);
+    }
+    td {
+      padding: 5px 10px;
+      border: 1px solid rgba(127, 127, 127, 0.25);
+    }
+    tbody tr:nth-child(even) {
+      background: rgba(127, 127, 127, 0.06);
+    }
+    tbody tr:hover {
+      background: rgba(66, 165, 245, 0.12);
+    }
+  }
+
+  // Pandas DataFrame — classic Jupyter look. Uses currentColor/rgba so it
+  // adapts to both light and dark themes without per-theme overrides.
+  table.dataframe {
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: inherit;
+
+    thead {
+      border-bottom: 1px solid currentColor;
+      vertical-align: bottom;
+    }
+
+    tr, th, td {
+      text-align: right;
+      vertical-align: middle;
+      padding: 4px 8px;
+      line-height: normal;
+      white-space: normal;
+      max-width: none;
+      border: none;
+      background: transparent;
+    }
+
+    th {
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(127, 127, 127, 0.06);
+    }
+    tbody tr:hover {
+      background: rgba(66, 165, 245, 0.15);
+    }
+  }
+}

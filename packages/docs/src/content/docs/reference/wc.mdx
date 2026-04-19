@@ -1,0 +1,60 @@
+---
+title: '@jupyter-kit/wc'
+description: Web Component reference — <jk-notebook> attributes and properties.
+---
+
+Framework-agnostic `<jk-notebook>` custom element. Drop into any HTML
+page, Svelte / Solid component, or static site. No framework runtime
+required — just the custom-element registration side-effect import.
+
+## Usage
+
+```html
+<script type="module">
+  import '@jupyter-kit/wc';
+  // Must also include a theme:
+  import '@jupyter-kit/theme-default/default.css';
+  import '@jupyter-kit/theme-default/syntax/one-dark.css';
+</script>
+
+<jk-notebook id="nb" language="python"></jk-notebook>
+
+<script type="module">
+  const el = document.getElementById('nb');
+  // Notebook is set as a property (object), not an attribute:
+  el.ipynb = await (await fetch('/my.ipynb')).json();
+</script>
+```
+
+## Attributes (serialise as strings)
+
+| Attribute | Type | Notes |
+|---|---|---|
+| `language` | `string` | Fallback cell language. |
+| `class-name` | `string` | Extra class on the root. |
+| `filename` | `string` | Default download filename. |
+| `math-align` | `'left' \| 'center' \| 'right'` | Display-math alignment. |
+| `bg-transparent` | `''` / `'false'` | Presence = `true`. |
+| `seq-as-execution-count` | `''` / `'false'` | Presence = `true`. |
+
+## Properties (object-valued, set via JS)
+
+| Property | Type | Notes |
+|---|---|---|
+| `ipynb` | `Ipynb` | **Required.** Parsed notebook JSON. Setting it mounts / re-renders. |
+| `plugins` | `Plugin[]` | |
+| `executor` | `Executor` | |
+| `languages` | `LanguageDef[]` | |
+| `htmlFilter` | `HtmlFilter` | |
+| `onSave` | `SaveHandler` | |
+
+Setting any property re-mounts the renderer. Read `.handle` after
+`connectedCallback` fires for imperative access (same shape as
+[`RendererHandle`](/reference/core/#cellhandle)).
+
+## SSR
+
+Safe to ship in static HTML — the custom element waits until
+`connectedCallback` before touching the DOM. `@jupyter-kit/wc` does
+register the element as a side effect at import time, so gate the import
+behind a client-only boundary if your framework SSRs JS modules.

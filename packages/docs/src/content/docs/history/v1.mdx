@@ -1,0 +1,105 @@
+---
+title: v1 — react-ipynb-renderer
+description: The original React-only notebook renderer. Read-only, Prism-highlighted, one opinionated component.
+---
+
+`react-ipynb-renderer` v1 was the first published release — a single React
+component that rendered Jupyter `.ipynb` JSON into a read-only DOM tree.
+The goal was modest but specific: let React apps drop a notebook into a
+page without running a Jupyter server, without iframes, and without
+server-side conversion.
+
+## Shape of the v1 API
+
+One default export, one prop:
+
+```tsx
+import { IpynbRenderer } from 'react-ipynb-renderer';
+
+<IpynbRenderer ipynb={notebook} />
+```
+
+Under the hood v1 did three things:
+
+1. **Walk the `.ipynb` JSON** (both cell-array v4 and legacy
+   `worksheets[0].cells`) and emit one React subtree per cell.
+2. **Run code cell sources through Prism** for syntax highlighting,
+   matching the `metadata.kernelspec.language` (or a best-effort guess).
+3. **Render outputs from the Jupyter MIME bundle**: `text/plain`,
+   `text/html`, `image/png`, `image/jpeg`, `image/svg+xml`, `text/latex`.
+
+Math rendering and interactive features didn't exist yet — the component
+was a pure viewer.
+
+## Feature timeline
+
+### 1.1.x — the HTML safety story
+
+The big addition in 1.1 was the **`htmlFilter`** prop. Any notebook
+exported from a Jupyter kernel can include arbitrary `text/html` in its
+output (think pandas DataFrames, Plotly widgets, user-written `display`
+calls). Without filtering, the renderer would pass that HTML straight
+through, which is dangerous in apps rendering notebooks from untrusted
+sources.
+
+```tsx
+import DOMPurify from 'dompurify';
+
+<IpynbRenderer
+  ipynb={notebook}
+  htmlFilter={(html) => DOMPurify.sanitize(html)}
+/>
+```
+
+This was the first step toward making the renderer usable in
+user-content-heavy apps (blog CMSs, teaching platforms), and the
+`htmlFilter` prop survived all the way to v3 — it's still part of
+`@jupyter-kit/core`'s public API today.
+
+### 1.2.x — formats and numbering
+
+1.2 rounded out the output pipeline:
+
+- **SVG output** (`output.svg`) and raw image data started rendering
+  correctly. Before 1.2, matplotlib figures exported as SVG would either
+  be silently dropped or rendered as escaped text.
+- The language-name type was widened to accept **`haskell`** and
+  **`ruby`**. The underlying Prism grammars had always been capable, but
+  the TypeScript types gated them off.
+- **`seqAsExecutionCount`** arrived — a flag controlling whether cells
+  with `execution_count: null` display `In [ ]:` (classic Jupyter) or the
+  positional index `In [n]:`. Useful for rendering in-progress notebooks
+  that haven't been fully re-run.
+
+## What worked well
+
+- **One install, one component.** No plugin wiring, no optional bundles.
+  Worked out of the box inside any React app.
+- **Presentational fidelity.** The output section matched what Jupyter
+  Lab itself showed for the same notebook — same line breaks, same
+  colour-coded ANSI in tracebacks, same inline images.
+
+## What v1 couldn't do
+
+- **No math rendering.** `$...$` / `$$...$$` passed through as raw text.
+- **No theming.** The component shipped a single stylesheet; if you
+  wanted a different look you had to override CSS yourself.
+- **React-only.** The component *was* the library; using the renderer
+  from Vue or a plain HTML page meant re-implementing it.
+
+Both limitations motivated v2.
+
+## Where to find v1 docs
+
+The v1 documentation is archived at
+[docs.walkframe.com/react-ipynb-renderer/history](https://docs.walkframe.com/react-ipynb-renderer/history).
+
+## What survived into later versions
+
+| v1 feature | Status in v3 |
+|---|---|
+| `htmlFilter` prop | Unchanged — part of `RendererOptions` |
+| `seqAsExecutionCount` | Unchanged |
+| SVG / raster image outputs | Unchanged |
+| Prism highlighting | **Replaced by Lezer** — see the [migration guide](/history/migration-guide/) |
+| Single React component | Still ships as `@jupyter-kit/react`, now thin over a framework-agnostic core |

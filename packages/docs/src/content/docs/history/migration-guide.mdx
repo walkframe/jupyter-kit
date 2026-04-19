@@ -1,0 +1,159 @@
+---
+title: Migration guide
+description: Upgrading from react-ipynb-renderer v1 / v2 to @jupyter-kit v3.
+---
+
+import InstallLine from '../../../components/InstallLine.astro';
+
+The v3 API is not source-compatible with v1 / v2. The minimum change set
+to get a v2 codebase running on `@jupyter-kit/react` v3 is small, but
+there are a few naming and structural shifts to be aware of.
+
+## 1. Rename the npm dep
+
+<InstallLine label="Install @jupyter-kit/react" command="pnpm add @jupyter-kit/react" />
+
+Remove `react-ipynb-renderer` from your `package.json` (and any lockfile
+pins).
+
+## 2. Update imports
+
+```diff
+-import { IpynbRenderer } from 'react-ipynb-renderer';
++import { Notebook } from '@jupyter-kit/react';
+```
+
+The component is now called `<Notebook>` (not `<IpynbRenderer>`). The
+ipynb JSON is passed via the `ipynb` prop as before.
+
+`@jupyter-kit/core` is pulled in transitively via the wrapper — you do not
+install it explicitly unless you're bypassing the wrappers and mounting
+from vanilla JS.
+
+## 3. Pick a theme package and import its CSS
+
+v2 bundled a single theme CSS with the component. v3 ships themes as
+separate packages — pick one chrome and optionally a syntax variant:
+
+<InstallLine label="Install theme-default" command="pnpm add @jupyter-kit/theme-default" />
+
+```diff
+-import 'react-ipynb-renderer/dist/styles/monokai.css';
++import '@jupyter-kit/theme-default/default.css';
++import '@jupyter-kit/theme-default/syntax/one-dark.css';
+```
+
+See the [install wizard](/install-wizard/#themes--13-chromes-pick-at-least-one)
+for every chrome and syntax variant, or grab `@jupyter-kit/theme-all` to
+let users switch at runtime.
+
+## 4. Add a math plugin — only if you render math
+
+v2 bundled KaTeX / MathJax into the component. v3 requires you to opt in.
+The `-cdn` variants are recommended — they add ~2 KB to your bundle and
+fetch the engine from jsDelivr on first math cell.
+
+<InstallLine label="KaTeX from CDN (recommended)" command="pnpm add @jupyter-kit/katex-cdn" />
+
+```tsx
+import { createKatexCdnPlugin } from '@jupyter-kit/katex-cdn';
+
+<Notebook
+  ipynb={notebook}
+  plugins={[createKatexCdnPlugin()]}
+  /* ... */
+/>
+```
+
+If you need full LaTeX compatibility, use `@jupyter-kit/mathjax-cdn`
+instead.
+
+## 5. Syntax highlighting — pass a language definition
+
+v2 used Prism and auto-detected languages. v3 uses Lezer parsers that you
+opt into, so your bundle only ships the grammars you actually use.
+
+```tsx
+import { python } from '@jupyter-kit/core/langs/python';
+
+<Notebook
+  ipynb={notebook}
+  language="python"
+  languages={[python]}
+/>
+```
+
+Python ships with core. Other languages (`javascript`, `r`, `julia`,
+`haskell`, `ruby`) are available as `@jupyter-kit/core/langs/*` imports —
+see the
+[install wizard](/install-wizard/#syntax-highlighting-per-language).
+
+## 6. Dropped / renamed props
+
+| v2 prop | v3 equivalent |
+|---|---|
+| `syntaxTheme` (CSS theme name) | Import the theme CSS file directly |
+| `displayMath` / `inlineMath` | Handled by the math plugin (KaTeX / MathJax) |
+| `formatter` (default) | Gone — output MIME bundle is handled automatically |
+| `htmlFilter` | Still supported as a `RendererOptions` field |
+| `seqAsExecutionCount` | Still supported |
+| `bgTransparent` | Still supported |
+| `onLoad` | Still supported (React wrapper) |
+| `ref` → `.handle()` / `.el()` | Still supported (React wrapper) |
+
+## 7. Optional: in-browser execution
+
+v3 adds **editor + execution** as opt-in packages. If you want Shift+Enter
+to run code in the browser:
+
+<InstallLine label="Pyodide executor" command="pnpm add @jupyter-kit/executor-pyodide" />
+<InstallLine label="WebR executor (GPL)" command="pnpm add @jupyter-kit/executor-webr webr" />
+
+Wire via `executor` + `plugins`:
+
+```tsx
+import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+import { python as pythonEditor } from '@codemirror/lang-python';
+
+<Notebook
+  executor={createPyodideExecutor()}
+  plugins={[createEditorPlugin({ extensions: [pythonEditor()] })]}
+  /* ... */
+/>
+```
+
+## 8. SSR
+
+v3's core is client-only. For SSR (Next.js, Astro, Nuxt), render the
+component client-side — e.g. `client:only="react"` in Astro islands, or
+`dynamic(() => import('@jupyter-kit/react'), { ssr: false })` in Next.
+
+## Minimal v2 → v3 diff
+
+```diff
+-import { IpynbRenderer } from 'react-ipynb-renderer';
+-import 'react-ipynb-renderer/dist/styles/monokai.css';
++import { Notebook } from '@jupyter-kit/react';
++import { python } from '@jupyter-kit/core/langs/python';
++import { createKatexCdnPlugin } from '@jupyter-kit/katex-cdn';
++import '@jupyter-kit/theme-default/default.css';
++import '@jupyter-kit/theme-default/syntax/one-dark.css';
+
+ export default function App({ notebook }) {
+   return (
+-    <IpynbRenderer
++    <Notebook
+       ipynb={notebook}
+-      syntaxTheme="monokai"
+-      displayMath="katex"
++      language="python"
++      languages={[python]}
++      plugins={[createKatexCdnPlugin()]}
+     />
+   );
+ }
+```
+
+Still stuck? Open an issue on
+[GitHub](https://github.com/righ/react-ipynb-renderer/issues).

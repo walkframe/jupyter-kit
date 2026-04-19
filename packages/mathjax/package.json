@@ -1,0 +1,40 @@
+{
+  "name": "@jupyter-kit/mathjax",
+  "version": "3.0.0-rc.0",
+  "description": "MathJax (bundled) plugin for @jupyter-kit/core. Renders TeX via rehype-mathjax during markdown processing.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "dependencies": {
+    "remark-math": "^6.0.0",
+    "rehype-mathjax": "^7.1.0"
+  },
+  "devDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/righ/react-ipynb-renderer.git",
+    "directory": "packages/mathjax"
+  }
+}

@@ -1,0 +1,59 @@
+// Shared ipywidgets (jupyter-widgets) layout fixes. Imported by both
+// `base.less` (for themes that inherit from jupyter-themes) and `default.less`
+// (which is self-contained). Keep this file as the single source of truth
+// for widget-specific workarounds; don't inline copies elsewhere.
+
+// Widgets ship their own box-sizing (mixed content-box + border-box). Our
+// defensive `*` override forces `border-box` everywhere; `revert` restores
+// each widget element to its own stylesheet / user-agent default.
+.lm-Widget,
+.lm-Widget *,
+.lm-Widget *::before,
+.lm-Widget *::after {
+  box-sizing: revert;
+}
+
+// Starlight / Docusaurus / Tailwind typography all inject
+// `margin-top: 1rem` on every non-first sibling (`.sl-markdown-content
+// > * + *` and friends). That rule cascades into widget internals — in
+// particular `.noUi-origin` inherits a 16px top margin, pushing the slider
+// handle 16px below its track. Neutralise margin across the whole widget
+// subtree so host-page markdown styles don't warp the widgets' own
+// pixel-perfect layout.
+.lm-Widget,
+.lm-Widget * {
+  margin-top: 0 !important;
+}
+
+// html-manager internally conditionally `require()`s ipywidgets 7 vs 8 CSS
+// based on model version. Vite can't statically resolve the branch so it
+// bundles BOTH. The ipywidgets 7 stylesheet
+// (`@jupyter-widgets/controls@3.x/css/widgets-base.css`) sets
+// `.widget-hslider .slider-container { height: var(--jp-widgets-inline-height) }`
+// which stretches the container to the full 28px row — with the 4px track
+// then stuck at the top. The ipywidgets 8 sheet omits that rule. Reset
+// height + force center alignment so the handle sits on the track.
+.widget-hslider .slider-container,
+.jupyter-widget-hslider .slider-container {
+  height: auto !important;
+  align-self: center !important;
+}
+
+// widgets.built.css hardcodes dark-on-light colours at multiple levels:
+//   - `.jupyter-widgets { color: black }` (container) — pollutes inheritance
+//     for every child.
+//   - `.widget-readout { color: black }`, `.widget-label { ... }` (leaves).
+// On dark chromes these are invisible. Force the whole widget subtree to
+// inherit the theme's `.jknb-root` foreground colour so everything stays
+// legible. We override the container first so downstream `inherit` on
+// labels / readouts resolves to the theme text colour instead of black.
+.jupyter-widgets,
+.lm-Widget {
+  color: inherit !important;
+}
+.widget-label,
+.jupyter-widget-label,
+.widget-readout,
+.jupyter-widget-readout {
+  color: inherit !important;
+}

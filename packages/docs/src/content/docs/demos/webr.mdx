@@ -1,0 +1,61 @@
+---
+title: Run R + plots in the browser
+description: Execute R cells and render plots with WebR — no server, no round-trip.
+---
+
+import WebRDemo from '../../../components/WebRDemo.tsx';
+
+<div class="privacy-callout">
+  <strong>Your R code never leaves the browser.</strong> Execution happens
+  entirely inside a <code>Web Worker</code> in this page. No network request
+  carries your cell source. WebR's R runtime is fetched once from its CDN on
+  first run, then cached — nothing else is sent.
+</div>
+
+Edit any cell, then press **Shift+Enter** (or ▶) to run. Plots are captured
+as PNG from R's graphics device and displayed inline:
+
+<WebRDemo client:only="react" />
+
+## What's running
+
+- `@jupyter-kit/executor-webr` wraps the `webr` npm package.
+- WebR boots R (compiled to WebAssembly) inside a Web Worker.
+- R graphics are rendered to an OffscreenCanvas, converted to base64 PNG,
+  and displayed as a Jupyter `display_data` output.
+- stdout / stderr / messages are captured separately and streamed.
+
+## Setup
+
+```sh
+pnpm add @jupyter-kit/executor-webr webr @jupyter-kit/editor-codemirror \
+  @codemirror/legacy-modes
+```
+
+```tsx
+import { createWebRExecutor } from '@jupyter-kit/executor-webr';
+import { r as rLang } from '@jupyter-kit/core/langs/r';
+import { StreamLanguage } from '@codemirror/language';
+import { r as rEditor } from '@codemirror/legacy-modes/mode/r';
+
+const executor = createWebRExecutor();
+const plugins = [
+  createEditorPlugin({ extensions: [StreamLanguage.define(rEditor)] }),
+];
+
+<Notebook
+  executor={executor}
+  plugins={plugins}
+  language="r"
+  languages={[rLang]}
+  ...
+/>
+```
+
+:::caution[License — GPL-2.0-or-later]
+The `webr` package embeds the R interpreter and is licensed GPL-2.0-or-later.
+If you ship `@jupyter-kit/executor-webr`, your application may need to comply
+with GPL terms. Evaluate that before shipping.
+
+The rest of `@jupyter-kit` is Apache-2.0 — only the WebR executor carries GPL.
+:::

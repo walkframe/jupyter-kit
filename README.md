@@ -8,8 +8,7 @@ This is a library to easily draw ipynb in a React application.
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer?ref=badge_shield)
 
 <p align="center">
-  <img 
-    src="https://github.com/righ/react-ipynb-renderer/raw/master/images/logo.png" alt="image" width="300" height="auto" style="align:center" />
+  <img src="brand/icon.svg" alt="jupyter-kit" width="180" height="180" />
 </p>
 
 ## Theme

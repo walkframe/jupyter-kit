@@ -1,0 +1,68 @@
+---
+title: '@jupyter-kit/widgets'
+description: ipywidgets renderer plugin — WidgetsPluginOptions.
+---
+
+Renders `application/vnd.jupyter.widget-view+json` outputs via
+`@jupyter-widgets/html-manager`. Works in two modes:
+
+- **Static** (no executor) — hydrates
+  `metadata.widgets["application/vnd.jupyter.widget-state+json"]` from
+  the notebook. Shows saved values, non-interactive.
+- **Live** (paired with [`executor-pyodide`](/reference/executor-pyodide/))
+  — sliders drive Python callbacks, outputs re-render.
+
+## `WidgetsPluginOptions`
+
+| Option | Type | Notes |
+|---|---|---|
+| `loader` | `(moduleName: string, moduleVersion: string) => Promise<unknown>` | Called when a widget references a module outside `@jupyter-widgets/{base,controls,output}`. Return the module exports containing view/model classes. |
+
+## Usage
+
+### Static
+
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { createWidgetsPlugin } from '@jupyter-kit/widgets';
+
+<Notebook plugins={[createWidgetsPlugin()]} ipynb={nb} />;
+```
+
+### Live (Pyodide)
+
+```tsx
+import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
+import { createWidgetsPlugin } from '@jupyter-kit/widgets';
+
+<Notebook
+  executor={createPyodideExecutor({ packages: ['ipywidgets'] })}
+  plugins={[createWidgetsPlugin()]}
+  ipynb={nb}
+/>;
+```
+
+The executor's `commProvider` is auto-detected — no extra wiring.
+
+## Bundle cost
+
+The plugin pulls in `@jupyter-widgets/{base,base-manager,controls,html-manager,output}`
+(~600 KB – 1 MB minified). It's installed as a separate package on
+purpose: notebooks without widgets shouldn't pay this cost. The heavy
+dependencies are dynamic-imported the first time `setup()` runs, so the
+initial render path stays light.
+
+## Limitations
+
+- Requires `@jupyter-kit/executor-pyodide` (or any other executor that
+  implements `commProvider`) for interactivity.
+- The ipywidgets `Output` widget's automatic matplotlib capture relies on
+  IPython's display hooks. We monkey-patch `interactive.update` to
+  approximate it, so `@interact(...)` style demos refresh their plot on
+  every slider change. More exotic `Output` use-cases (multi-widget
+  display, `clear_output(wait=True)` interleaving) may not match
+  classic-Jupyter behaviour.
+- `widget-view` outputs referencing a model-id that was never registered
+  (e.g. notebook cached outputs where the original kernel state wasn't
+  saved) render as a muted `[widget — run the cell to render]`
+  placeholder.

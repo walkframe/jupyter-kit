@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/comm",
-  "version": "3.0.0-rc.0",
+  "version": "3.0.0-rc.3",
   "description": "Jupyter Comm protocol interface for @jupyter-kit. Defines the CommProvider + Comm types that executors implement and plugins (notably @jupyter-kit/widgets) consume.",
   "type": "module",
   "main": "./dist/index.js",

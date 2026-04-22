@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/widgets",
-  "version": "3.0.0-rc.0",
+  "version": "3.0.0-rc.1",
   "description": "Jupyter widgets (ipywidgets) plugin for @jupyter-kit. Renders `application/vnd.jupyter.widget-view+json` outputs via @jupyter-widgets/html-manager. If the executor exposes a CommProvider (see @jupyter-kit/executor-pyodide), widgets become fully interactive; otherwise embedded widget-state is hydrated for a static view.",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,7 +30,8 @@
     "@jupyter-widgets/base": "^6.0.10",
     "@jupyter-widgets/controls": "^5.0.11",
     "@jupyter-widgets/html-manager": "^1.0.11",
-    "@jupyter-widgets/output": "^6.0.10"
+    "@jupyter-widgets/output": "^6.0.10",
+    "tslib": "^2.6.0"
   },
   "devDependencies": {
     "@jupyter-kit/core": "workspace:*"

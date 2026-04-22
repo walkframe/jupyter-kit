@@ -14,7 +14,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
@@ -35,5 +37,6 @@
     "type": "git",
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/vue"
-  }
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
 }

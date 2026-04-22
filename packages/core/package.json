@@ -48,7 +48,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
@@ -78,22 +80,36 @@
     "@lezer/javascript": "^1.4.0"
   },
   "peerDependenciesMeta": {
-    "@codemirror/language":     { "optional": true },
-    "@codemirror/legacy-modes": { "optional": true },
-    "@codemirror/state":        { "optional": true },
-    "@lezer/javascript":        { "optional": true }
+    "@codemirror/language": {
+      "optional": true
+    },
+    "@codemirror/legacy-modes": {
+      "optional": true
+    },
+    "@codemirror/state": {
+      "optional": true
+    },
+    "@lezer/javascript": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/unist": "^3.0.2",
     "jsdom": "^26.0.0",
     "vitest": "^2.1.0"
   },
-  "keywords": ["jupyter", "ipynb", "notebook", "renderer"],
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer"
+  ],
   "author": "righ",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/core"
-  }
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
 }

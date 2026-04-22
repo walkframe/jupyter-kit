@@ -32,7 +32,7 @@ for pkg_dir in packages/*/; do
   fi
 
   echo "::group::publish $NAME@$VERSION $TAG"
-  (cd "$pkg_dir" && pnpm publish --access public $TAG --no-git-checks) \
+  (cd "$pkg_dir" && pnpm publish --access public $TAG --no-git-checks --provenance) \
     || echo "  -> skipped (already published or publish failed)"
   echo "::endgroup::"
 done

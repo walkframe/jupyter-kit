@@ -119,3 +119,6 @@ playwright/.cache/
 
 # Astro (auto-generated content types / data store cache)
 .astro/
+
+# SvelteKit / svelte-package generated types
+.svelte-kit/

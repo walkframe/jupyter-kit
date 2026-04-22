@@ -16,7 +16,9 @@
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "svelte-package -i src -o dist",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json",
@@ -40,5 +42,6 @@
     "type": "git",
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/svelte"
-  }
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
 }

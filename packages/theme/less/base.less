@@ -32,6 +32,10 @@
   // (Starlight / Docusaurus body is typically 16-17px, which makes code +
   // prose read too large compared to classic Jupyter).
   font-size: 14px;
+  // Force left alignment so Vite/CRA-style scaffolds (which set
+  // `text-align: center` on body / #root) don't centre-align prose, code,
+  // and outputs inside the renderer.
+  text-align: left;
   // Jupyter-themes sets its foreground colour on `.jknb-root body` (requires a
   // <body> descendant that we don't render) — so the root container itself
   // has no color, and browser default `black` propagates to any descendant

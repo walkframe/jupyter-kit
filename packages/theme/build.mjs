@@ -24,7 +24,13 @@ const chromeDir = join(themesDir, 'chrome');
 const syntaxDir = join(themesDir, 'syntax');
 const publishDir = resolve(__dirname, 'dist-publish');
 
-const VERSION = '3.0.0-rc.0';
+// Single source of truth: the workspace theme package's own version. Every
+// generated `theme-<chrome>` / `theme-all` package gets this, so a release
+// bump only edits packages/theme/package.json.
+const sourcePkgJson = JSON.parse(
+  await readFile(resolve(__dirname, 'package.json'), 'utf8'),
+);
+const VERSION = sourcePkgJson.version;
 const SKIP = new Set(['base.less', 'variables.less', '_widget-patch.less']);
 
 // Don't wipe `themesDir` — in watch mode, Vite may try to read a CSS file

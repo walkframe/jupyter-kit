@@ -1,133 +1,147 @@
-# React Ipynb Renderer
-This is a library to easily draw ipynb in a React application.
-
-[![npm version](https://img.shields.io/npm/v/react-ipynb-renderer)](https://www.npmjs.com/package/react-ipynb-renderer)
-[![e2e workflow](https://github.com/righ/react-ipynb-renderer/actions/workflows/e2e.yaml/badge.svg?branch=master)](https://github.com/righ/react-ipynb-renderer/actions/workflows/e2e.yaml)
-[![License](https://img.shields.io/npm/l/react-ipynb-renderer)](https://github.com/righ/react-ipynb-renderer/blob/main/LICENSE)
-![downloads](https://img.shields.io/npm/dm/react-ipynb-renderer?style=flat-square)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer?ref=badge_shield)
-
 <p align="center">
-  <img src="brand/icon.svg" alt="jupyter-kit" width="180" height="180" />
+  <img src="packages/docs/src/assets/logo.svg" alt="jupyter-kit" width="180" height="180" />
 </p>
 
-## Theme
+<h1 align="center">@jupyter-kit</h1>
 
-Please choose your favorite combination from the multiple themes available for Jupyter and syntax highlighting. 
+<p align="center">
+  <em>Framework-agnostic Jupyter notebook renderer for the browser.</em>
+</p>
 
-There are several options for each, allowing you to find the perfect match for your preference.
+<p align="center">
+  <a href="https://www.npmjs.com/package/@jupyter-kit/react"><img src="https://img.shields.io/npm/v/@jupyter-kit/react?label=%40jupyter-kit%2Freact" alt="npm @jupyter-kit/react" /></a>
+  <a href="https://github.com/righ/react-ipynb-renderer/actions/workflows/e2e.yaml"><img src="https://github.com/righ/react-ipynb-renderer/actions/workflows/e2e.yaml/badge.svg?branch=master" alt="e2e" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/@jupyter-kit/react" alt="license" /></a>
+  <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer?ref=badge_shield"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer.svg?type=shield" alt="FOSSA status" /></a>
+</p>
 
-| solarizedl and duotone forest themes                                                                                          | monokai and xonokai themes                                                                                  |
-| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| ![solarizedl](https://github.com/righ/react-ipynb-renderer/raw/master/images/solarizedl-duotone_earth.png) | ![monokai](https://github.com/righ/react-ipynb-renderer/raw/master/images/monokai-xonokai.png) |
+---
 
-As for jupyter themes, you may use your own customized CSS. You do not necessarily have to use the prepared jupyter theme.
+`@jupyter-kit/*` renders `.ipynb` notebooks in the browser from any host —
+React, Vue 3, a Web Component, or plain DOM. Optional packages add
+in-browser execution (Pyodide / WebR), interactive ipywidgets,
+KaTeX / MathJax, editable CodeMirror cells, and 13 chrome themes ×
+8 syntax themes.
 
+> Formerly [`react-ipynb-renderer`](https://www.npmjs.com/package/react-ipynb-renderer)
+> (v1 / v2). v3 is a rewrite into a pnpm monorepo; see the
+> [migration guide](https://jupyter-kit.walkframe.com/history/migration-guide/).
 
-## Formula renderer
-You can choose Mathjax or Katex for rendering formulas. 
-
-Normally I would recommend choosing react-ipynb-renderer which uses Mathjax.
-react-ipynb-renderer-katex is a bit lighter than the mathjax version.
-
-| Mathjax | Katex |
-| ------- | ----- |
-| [![NPM](https://nodei.co/npm/react-ipynb-renderer.png?mini=true)](https://www.npmjs.com/package/react-ipynb-renderer) | [![NPM](https://nodei.co/npm/react-ipynb-renderer-katex.png?mini=true)](https://www.npmjs.com/package/react-ipynb-renderer-katex) |
-| [![CodeSandbox](https://img.shields.io/badge/Codesandbox-FFFFFF?style=for-the-badge&logo=codesandbox&logoColor=159D48)](https://codesandbox.io/s/react-ipynb-renderer-sample-kbu4z?file=/src/App.tsx) | [![CodeSandbox](https://img.shields.io/badge/Codesandbox-2B9895?style=for-the-badge&logo=codesandbox&logoColor=FFFFFF)](https://codesandbox.io/s/react-ipynb-renderer-katex-sample-770np1?file=/src/App.tsx) |
-
-These will be released at the same time, so the versions will be the same. Even if only one of them has been changed.
-
-
-# Install
+## Quick start — React
 
 ```sh
-$ npm install --save react-ipynb-renderer
+pnpm add @jupyter-kit/react @jupyter-kit/theme-default
 ```
 
-or
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { python } from '@jupyter-kit/core/langs/python';
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+
+import notebook from './demo.ipynb';
+
+export default function App() {
+  return <Notebook ipynb={notebook} language="python" languages={[python]} />;
+}
+```
+
+Vue / Web Component / vanilla variants + every opt-in (math, executor,
+widgets, …) are generated by the
+[install wizard](https://jupyter-kit.walkframe.com/install-wizard/).
+
+## Features
+
+- **Framework wrappers** — `@jupyter-kit/react`, `@jupyter-kit/vue`,
+  `@jupyter-kit/wc` (`<jk-notebook>` custom element), or
+  `@jupyter-kit/core` used directly from vanilla JS.
+- **In-browser execution** — `@jupyter-kit/executor-pyodide` (Python) and
+  `@jupyter-kit/executor-webr` (R) run cells in a Web Worker, with
+  multi-CDN fallback + per-candidate timeout.
+- **Interactive ipywidgets** — `@jupyter-kit/widgets` hydrates saved
+  widget-state for static notebooks, or drives widgets live over the
+  Jupyter Comm protocol when paired with the Pyodide executor.
+- **Math rendering** — KaTeX or MathJax, bundled or CDN; see
+  [`@jupyter-kit/katex` / `-cdn` / `@jupyter-kit/mathjax` / `-cdn`](https://jupyter-kit.walkframe.com/reference/math-plugins/).
+- **Themes** — 13 chromes × 8 syntax themes, published per-chrome
+  (`@jupyter-kit/theme-<name>`) or all-in-one (`@jupyter-kit/theme-all`).
+- **CodeMirror 6 editor** — `@jupyter-kit/editor-codemirror` makes cells
+  editable; combine with an executor for a mini notebook.
+- **Security** — DOMPurify + rehype-sanitize by default; Playwright XSS
+  suite (`packages/e2e/tests/xss.spec.ts`) runs on every push.
+
+## Package catalog
+
+| Package | Purpose |
+|---|---|
+| `@jupyter-kit/core` | Rendering engine (no framework dependency) |
+| `@jupyter-kit/react` / `vue` / `wc` | Framework wrappers (`<Notebook>` / `<jk-notebook>`) |
+| `@jupyter-kit/theme-<name>` | Notebook chrome CSS — 13 variants |
+| `@jupyter-kit/theme-all` | Every chrome + every syntax theme under subpaths |
+| `@jupyter-kit/editor-codemirror` | CodeMirror 6 editor plugin |
+| `@jupyter-kit/executor-pyodide` | Python executor (Pyodide) |
+| `@jupyter-kit/executor-webr` | R executor (WebR) — GPL-2.0+ |
+| `@jupyter-kit/katex` / `-cdn` | KaTeX math plugin (bundled / CDN) |
+| `@jupyter-kit/mathjax` / `-cdn` | MathJax math plugin (bundled / CDN) |
+| `@jupyter-kit/widgets` | ipywidgets renderer |
+| `@jupyter-kit/comm` | Jupyter Comm protocol types (zero runtime) |
+
+## Docs & live demos
+
+- [Documentation site](https://jupyter-kit.walkframe.com/) — install
+  wizard, API reference, guides
+- [Theme switcher](https://jupyter-kit.walkframe.com/demos/themes/) —
+  swap chrome / syntax / math engine at runtime
+- [Pyodide demo](https://jupyter-kit.walkframe.com/demos/pyodide/) —
+  Python cells in-browser, with matplotlib + ipywidgets
+- [WebR demo](https://jupyter-kit.walkframe.com/demos/webr/) — R cells
+  in-browser with inline plots
+
+## Monorepo layout
+
+```
+packages/
+  core                                  ← rendering engine
+  react, vue, wc                        ← framework wrappers
+  theme                                 ← less sources + publish build
+  editor-codemirror                     ← editor plugin
+  executor-pyodide, executor-webr       ← in-browser runtimes
+  katex, katex-cdn, mathjax, mathjax-cdn
+  widgets, comm                         ← ipywidgets support
+  fixtures                              ← shared .ipynb test fixtures
+  storybook                             ← Storybook stories
+  e2e                                   ← Playwright tests
+  docs                                  ← Astro + Starlight site
+```
+
+## Development
 
 ```sh
-$ npm install --save react-ipynb-renderer-katex
+# Clone with the jupyter-themes submodule (less sources for chromes)
+git clone --recurse-submodules https://github.com/righ/react-ipynb-renderer.git
+cd react-ipynb-renderer
+pnpm install
+
+# Workspace-wide build — all packages, topologically ordered
+pnpm build
+
+# Unit tests
+pnpm test
+
+# Playwright e2e (builds the storybook static site automatically)
+pnpm test:e2e
+
+# Interactive stories
+pnpm storybook
+
+# Docs dev server (theme watcher + Astro at http://localhost:4321)
+pnpm -F @jupyter-kit/docs dev
 ```
-
-# Usage
-Just pass an ipynb json object to `IpynbRenderer` component.
-
-## Using ipynb as a string
-If you have an ipynb file as a string, you can parse it using `JSON.parse()`:
-
-```jsx
-import { IpynbRenderer } from "react-ipynb-renderer";
-
-// Jupyter theme
-import "react-ipynb-renderer/dist/styles/monokai.css";
-
-export const Component = () => {
-  const ipynbString = `{
-    "cells": [
-      {
-        "cell_type": "markdown",
-        "metadata": {},
-        "source": ["# Hello World"]
-      }
-    ],
-    "metadata": {},
-    "nbformat": 4,
-    "nbformat_minor": 4
-  }`;
-  
-  const ipynb = JSON.parse(ipynbString);
-  
-  return (
-    <IpynbRenderer ipynb={ipynb} />
-  );
-};
-```
-
-## Simplest example
-
-### Using react-ipynb-renderer
-
-```jsx
-import { IpynbRenderer } from "react-ipynb-renderer";
-
-// Jupyter theme
-import "react-ipynb-renderer/dist/styles/monokai.css";
-// import ipynb file as json
-import ipynb from "./test.ipynb";
-
-export const Component = () => {
-  return (
-    <IpynbRenderer ipynb={ipynb} />
-  );
-};
-```
-
-### Using react-ipynb-renderer-katex
-
-```jsx
-import { IpynbRenderer } from "react-ipynb-renderer-katex";
-
-// Formula renderer for katex
-import 'katex/dist/katex.min.css';
-
-// Jupyter theme
-import "react-ipynb-renderer-katex/dist/styles/monokai.css";
-// import ipynb file as json
-import ipynb from "./test.ipynb";
-
-export const Component = () => {
-  return (
-    <IpynbRenderer ipynb={ipynb} />
-  );
-};
-```
-
-# Links
-
-- https://docs.walkframe.com/react-ipynb-renderer
-- https://www.npmjs.com/package/react-ipynb-renderer
-
 
 ## License
+
+Apache-2.0. See [LICENSE](LICENSE). Third-party license elections and
+one opt-in GPL dependency (`@jupyter-kit/executor-webr`) are documented
+in [NOTICE.md](NOTICE.md).
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer?ref=badge_large)

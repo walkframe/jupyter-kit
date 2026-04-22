@@ -1,0 +1,62 @@
+name: release
+
+on:
+  push:
+    branches:
+      - master
+      - fix/*
+    tags:
+      - "v*/*"
+
+permissions:
+  id-token: write # Required for npm trusted publishing (OIDC) / --provenance
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: install
+        run: pnpm install
+      - name: test
+        run: pnpm test
+
+  release:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    name: npm publish
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm install -g npm@latest
+      - name: remove authToken from .npmrc
+        run: |
+          NPM_RC=$(npm config get userconfig)
+          sed -i '/_authToken/d' "$NPM_RC" 2>/dev/null || true
+
+      - name: install
+        run: pnpm install
+
+      - name: build
+        run: pnpm -r --filter "./packages/*" run build
+
+      - name: publish all public packages
+        run: pnpm release

@@ -15,7 +15,12 @@
     "prettier": "prettier --write \"packages/**/*.{ts,tsx,css,less}\"",
     "eslint": "eslint --ext .ts,.tsx packages",
     "storybook": "pnpm --filter @jupyter-kit/storybook storybook",
-    "storybook:build": "pnpm --filter @jupyter-kit/storybook build:static"
+    "storybook:build": "pnpm --filter @jupyter-kit/storybook build:static",
+    "release": "./scripts/release-all.sh",
+    "tag": "./scripts/tag-all.sh",
+    "tag:push": "./scripts/tag-all.sh --push",
+    "untag": "./scripts/untag-all.sh",
+    "untag:remote": "./scripts/untag-all.sh --remote"
   },
   "devDependencies": {
     "@types/node": "^20.12.0",

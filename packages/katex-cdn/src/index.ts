@@ -1,4 +1,5 @@
 import type { Plugin } from '@jupyter-kit/core';
+import { remarkPromoteDisplayMath } from '@jupyter-kit/core';
 import remarkMath from 'remark-math';
 import { visit } from 'unist-util-visit';
 
@@ -98,7 +99,7 @@ export function createKatexCdnPlugin(
     // Same deal as mathjax-cdn: tokenise math early so escape characters
     // survive markdown processing, then re-wrap with `$...$` so KaTeX
     // auto-render can find and typeset them.
-    remarkPlugins: [remarkMath],
+    remarkPlugins: [remarkMath, remarkPromoteDisplayMath],
     rehypePlugins: [rehypeUnwrapMath],
     setup() {
       void ensureLoaded().catch((err) => {
@@ -204,7 +205,13 @@ type HastNode = {
   value?: string;
 };
 
-/** Unwrap remark-math's `<code class="math-inline|math-display">` into bare `$...$` / `$$...$$` text so CDN auto-renderers can scan it. */
+/**
+ * Unwrap remark-math's `<code class="math-inline|math-display">` into bare
+ * `$...$` / `$$...$$` text so the CDN-loaded KaTeX auto-render can scan it.
+ * `remarkPromoteDisplayMath` (run earlier in the remark pass) reclassifies
+ * single-line `$$..$$` as `math-display`, so by the time we reach the hast
+ * tree the className alone is enough to decide delimiter pair.
+ */
 function rehypeUnwrapMath() {
   return (tree: HastNode) => {
     visit(tree, 'element', (node: HastNode) => {

@@ -1,4 +1,5 @@
 import type { Plugin } from '@jupyter-kit/core';
+import { remarkPromoteDisplayMath } from '@jupyter-kit/core';
 import remarkMath from 'remark-math';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import type { Options as RemarkMathOptions } from 'remark-math';
@@ -19,7 +20,10 @@ export type MathjaxPluginOptions = {
 export function createMathjaxPlugin(opts: MathjaxPluginOptions = {}): Plugin {
   return {
     name: '@jupyter-kit/mathjax',
-    remarkPlugins: [[remarkMath, opts.remarkMathOptions ?? {}]],
+    remarkPlugins: [
+      [remarkMath, opts.remarkMathOptions ?? {}],
+      remarkPromoteDisplayMath,
+    ],
     rehypePlugins: [[rehypeMathjax, opts.mathjaxOptions ?? {}]],
   };
 }

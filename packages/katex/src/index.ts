@@ -1,4 +1,5 @@
 import type { Plugin } from '@jupyter-kit/core';
+import { remarkPromoteDisplayMath } from '@jupyter-kit/core';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import type { Options as RemarkMathOptions } from 'remark-math';
@@ -24,6 +25,7 @@ export function createKatexPlugin(opts: KatexPluginOptions = {}): Plugin {
     remarkPlugins: [
       preprocessEqnarray,
       [remarkMath, opts.remarkMathOptions ?? {}],
+      remarkPromoteDisplayMath,
     ],
     rehypePlugins: [[rehypeKatex, opts.katexOptions ?? {}]],
   };

@@ -96,6 +96,18 @@
     max-width: 100%;
     height: auto;
   }
+  // KaTeX uses oversized `<svg width="400em">` to draw radical / extensible
+  // arrow strokes. Capping with `max-width: 100%` + `height: auto` collapses
+  // the height (huge aspect ratio × tiny width = ~0px), making the √ symbol
+  // disappear. Opt the .katex subtree out.
+  // Only override max-width — leave `height` to KaTeX's own
+  // `.katex svg { height: inherit }` rule. Touching height with `revert`
+  // collapses it to the UA default (`auto`), which then re-derives from
+  // viewBox aspect ratio and pushes height to ~0px (KaTeX's radical viewBox
+  // is 400000:1080 ≈ 370:1).
+  .katex img, .katex svg {
+    max-width: none;
+  }
   .cm-editor,
   .cm-scroller {
     max-width: 100%;

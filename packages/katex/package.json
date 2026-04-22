@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/katex",
-  "version": "3.0.0-rc.0",
+  "version": "3.0.0-rc.1",
   "description": "KaTeX (bundled) plugin for @jupyter-kit/core. Renders TeX via rehype-katex during markdown processing.",
   "type": "module",
   "main": "./dist/index.js",

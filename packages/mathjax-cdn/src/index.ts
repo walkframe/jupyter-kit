@@ -1,4 +1,5 @@
 import type { Plugin, RuntimeContext } from '@jupyter-kit/core';
+import { remarkPromoteDisplayMath } from '@jupyter-kit/core';
 import remarkMath from 'remark-math';
 import { visit } from 'unist-util-visit';
 
@@ -125,7 +126,7 @@ export function createMathjaxCdnPlugin(
     // LaTeX source (e.g. `\\` becoming `\`). rehypeUnwrapMath then drops the
     // math node wrapper back to bare `$...$` in the DOM so MathJax picks it
     // up.
-    remarkPlugins: [remarkMath],
+    remarkPlugins: [remarkMath, remarkPromoteDisplayMath],
     rehypePlugins: [rehypeUnwrapMath],
     setup(_ctx: RuntimeContext) {
       void ensureLoaded().catch((err) => {
@@ -191,6 +192,10 @@ type HastNode = {
  * the content; by the time we see the tree the LaTeX is intact. Convert each
  * math node into a plain text node wrapped in `$...$` / `$$...$$` so the
  * CDN-loaded typesetter can scan and render them.
+ *
+ * `remarkPromoteDisplayMath` (run earlier in the remark pass) reclassifies
+ * single-line `$$..$$` as `math-display`, so by the time we reach the hast
+ * tree the className alone is enough to decide delimiter pair.
  */
 function rehypeUnwrapMath() {
   return (tree: HastNode) => {

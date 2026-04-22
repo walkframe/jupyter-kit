@@ -18,6 +18,7 @@ export type {
 export { createRenderer } from './renderer';
 export { defaultHtmlFilter } from './filter';
 export { remarkLatexEnvironment } from './latex-env';
+export { remarkPromoteDisplayMath } from './remark-promote-display-math';
 export { buildMarkdownProcessor, renderMarkdown } from './markdown';
 export type { MarkdownPipelineOptions } from './markdown';
 export { highlight, highlightWithParser } from './highlight';

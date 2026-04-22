@@ -36,4 +36,4 @@ and on the project documentation site.
 ## Contact
 
 Questions about licensing? Open an issue at
-<https://github.com/righ/react-ipynb-renderer/issues>.
+<https://github.com/walkframe/jupyter-kit/issues>.

@@ -34,7 +34,7 @@
   "license": "GPL-2.0-or-later",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/righ/react-ipynb-renderer.git",
+    "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/executor-webr"
   }
 }

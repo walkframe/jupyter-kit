@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@jupyter-kit/react"><img src="https://img.shields.io/npm/v/@jupyter-kit/react?label=%40jupyter-kit%2Freact" alt="npm @jupyter-kit/react" /></a>
-  <a href="https://github.com/righ/react-ipynb-renderer/actions/workflows/e2e.yaml"><img src="https://github.com/righ/react-ipynb-renderer/actions/workflows/e2e.yaml/badge.svg?branch=master" alt="e2e" /></a>
+  <a href="https://github.com/walkframe/jupyter-kit/actions/workflows/e2e.yaml"><img src="https://github.com/walkframe/jupyter-kit/actions/workflows/e2e.yaml/badge.svg?branch=master" alt="e2e" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@jupyter-kit/react" alt="license" /></a>
   <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer?ref=badge_shield"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Frigh%2Freact-ipynb-renderer.svg?type=shield" alt="FOSSA status" /></a>
 </p>
@@ -118,7 +118,7 @@ packages/
 
 ```sh
 # Clone with the jupyter-themes submodule (less sources for chromes)
-git clone --recurse-submodules https://github.com/righ/react-ipynb-renderer.git
+git clone --recurse-submodules https://github.com/walkframe/jupyter-kit.git
 cd react-ipynb-renderer
 pnpm install
 

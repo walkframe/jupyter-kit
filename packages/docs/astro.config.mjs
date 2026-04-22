@@ -14,7 +14,7 @@ export default defineConfig({
       },
       favicon: '/favicon.svg',
       social: {
-        github: 'https://github.com/righ/react-ipynb-renderer',
+        github: 'https://github.com/walkframe/jupyter-kit',
       },
       // `sanitize-html` (pulled transitively by @jupyter-widgets/html-manager)
       // touches `postcss` → `source-map-js` / Node `path` / `url`, which Vite

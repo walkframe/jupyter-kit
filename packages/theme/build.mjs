@@ -104,7 +104,7 @@ for (const chrome of chromeNames) {
     license: 'Apache-2.0',
     repository: {
       type: 'git',
-      url: 'git+https://github.com/righ/react-ipynb-renderer.git',
+      url: 'git+https://github.com/walkframe/jupyter-kit.git',
       directory: 'packages/theme',
     },
   };
@@ -138,7 +138,7 @@ for (const chrome of chromeNames) {
     license: 'Apache-2.0',
     repository: {
       type: 'git',
-      url: 'git+https://github.com/righ/react-ipynb-renderer.git',
+      url: 'git+https://github.com/walkframe/jupyter-kit.git',
       directory: 'packages/theme',
     },
   };

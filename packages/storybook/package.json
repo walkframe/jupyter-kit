@@ -16,6 +16,7 @@
     "@codemirror/view": "^6.28.0",
     "@jupyter-kit/core": "workspace:*",
     "@jupyter-kit/editor-codemirror": "workspace:*",
+    "@jupyter-kit/executor-jupyter": "workspace:*",
     "@jupyter-kit/executor-pyodide": "workspace:*",
     "@jupyter-kit/executor-webr": "workspace:*",
     "@jupyter-kit/fixtures": "workspace:*",

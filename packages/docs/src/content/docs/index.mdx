@@ -3,7 +3,7 @@ title: '@jupyter-kit'
 description: Framework-agnostic Jupyter notebook renderer for the browser.
 template: splash
 hero:
-  tagline: Render Jupyter notebooks — and optionally run Python / R in the browser — from any framework.
+  tagline: Render Jupyter notebooks — and optionally run Python / R in the browser, or connect to a remote Jupyter kernel — from any framework.
   actions:
     - text: Get started
       link: /getting-started/
@@ -25,8 +25,8 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 <CardGrid>
   <Card title="Framework-agnostic core" icon="setting">
     Core has **zero** framework dependencies. First-class wrappers for
-    **React**, **Vue**, and plain **Web Components** — pick one or use the
-    core directly from vanilla JS.
+    **React**, **Vue**, **Svelte**, and plain **Web Components** — pick
+    one or use the core directly from vanilla JS.
   </Card>
   <Card title="Read-only by default" icon="document">
     The baseline install is a pure notebook *viewer* — markdown, code with
@@ -46,6 +46,11 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
     `@jupyter-kit/executor-webr` wraps [WebR](https://webr.r-wasm.org) and
     captures R graphics as PNG. Same privacy posture as Python — execution
     happens entirely on the client.
+  </Card>
+  <Card title="…or connect to a remote kernel" icon="puzzle">
+    `@jupyter-kit/executor-jupyter` speaks the Jupyter kernel WebSocket
+    protocol — point it at a Jupyter Server and cells run on any installed
+    kernel (Python, R, Julia, …). Good for full-fat scientific stacks.
   </Card>
   <Card title="Math: bundled or from CDN" icon="star">
     Pick **KaTeX** or **MathJax**, and bundle the engine or pull it from a
@@ -84,13 +89,14 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 # Just view notebooks (React):
 pnpm add @jupyter-kit/react @jupyter-kit/theme-default
 
-# Or with Vue / Web Components:
-pnpm add @jupyter-kit/vue @jupyter-kit/theme-default
-pnpm add @jupyter-kit/wc  @jupyter-kit/theme-default
+# Or with Vue / Svelte / Web Components:
+pnpm add @jupyter-kit/vue    @jupyter-kit/theme-default
+pnpm add @jupyter-kit/svelte @jupyter-kit/theme-default
+pnpm add @jupyter-kit/wc     @jupyter-kit/theme-default
 ```
 
 The core is pulled in transitively — you only ever install the wrapper you
 actually use.
 
 See the [install wizard](/install-wizard/) for case-by-case guidance on
-editing, math, Pyodide, and WebR.
+editing, math, Pyodide, WebR, and remote Jupyter kernels.

@@ -27,14 +27,16 @@ One copy-pastable install per scenario — no follow-up `pnpm add` needed.
 |---|---|
 | React app, render a notebook | <InstallLine label="" command="pnpm add @jupyter-kit/react @jupyter-kit/theme-default" /> |
 | Vue 3 app, render a notebook | <InstallLine label="" command="pnpm add @jupyter-kit/vue @jupyter-kit/theme-default" /> |
+| Svelte 5 app, render a notebook | <InstallLine label="" command="pnpm add @jupyter-kit/svelte @jupyter-kit/theme-default" /> |
 | Web Component (any host) | <InstallLine label="" command="pnpm add @jupyter-kit/wc @jupyter-kit/theme-default" /> |
 | Vanilla JS / custom host | <InstallLine label="" command="pnpm add @jupyter-kit/core @jupyter-kit/theme-default" /> |
 | \+ KaTeX (CDN, recommended) | <InstallLine label="" command="pnpm add @jupyter-kit/katex-cdn" /> |
 | \+ KaTeX (bundled) | <InstallLine label="" command="pnpm add @jupyter-kit/katex katex" /> |
 | \+ MathJax (CDN) | <InstallLine label="" command="pnpm add @jupyter-kit/mathjax-cdn" /> |
 | \+ MathJax (bundled) | <InstallLine label="" command="pnpm add @jupyter-kit/mathjax mathjax-full" /> |
-| \+ Edit + run Python | <InstallLine label="" command="pnpm add @jupyter-kit/executor-pyodide" /> |
-| \+ Edit + run R (GPL-2.0+) | <InstallLine label="" command="pnpm add @jupyter-kit/executor-webr webr" /> |
+| \+ Edit + run Python (browser) | <InstallLine label="" command="pnpm add @jupyter-kit/executor-pyodide" /> |
+| \+ Edit + run R (browser, GPL-2.0+) | <InstallLine label="" command="pnpm add @jupyter-kit/executor-webr webr" /> |
+| \+ Edit + run on remote Jupyter kernel | <InstallLine label="" command="pnpm add @jupyter-kit/executor-jupyter" /> |
 | \+ ipywidgets (static) | <InstallLine label="" command="pnpm add @jupyter-kit/widgets" /> |
 | \+ ipywidgets (live w/ Pyodide) | <InstallLine label="" command="pnpm add @jupyter-kit/widgets @jupyter-kit/executor-pyodide" /> |
 | Ship every chrome theme | <InstallLine label="" command="pnpm add @jupyter-kit/theme-all" /> |
@@ -52,11 +54,12 @@ Approximate client-side bundle impact (minified, no gzip):
 | Package | Cost | Notes |
 |---|---:|---|
 | `@jupyter-kit/core` | ~80 KB | Markdown + Lezer + sanitizer included |
-| `@jupyter-kit/react` / `vue` / `wc` | +5 KB | Thin wrapper around core |
+| `@jupyter-kit/react` / `vue` / `svelte` / `wc` | +5 KB | Thin wrapper around core |
 | `@jupyter-kit/theme-default` | ~10 KB CSS | Plus one syntax theme (~3 KB) |
 | `@jupyter-kit/editor-codemirror` | ~300 KB | CodeMirror 6 + grammars |
 | `@jupyter-kit/executor-pyodide` | ~320 KB | Editor + worker bridge. Pyodide itself (~10 MB) is fetched from CDN at first run |
 | `@jupyter-kit/executor-webr` | ~300 KB | Editor + `webr`. WebR runtime fetched at first run |
+| `@jupyter-kit/executor-jupyter` | ~10 KB | REST + WebSocket client for a remote Jupyter Server. No bundled runtime |
 | `@jupyter-kit/widgets` | ~600 KB – 1 MB | `@jupyter-widgets/{base,controls,html-manager,output}` pulled in lazily via dynamic import |
 | `@jupyter-kit/comm` | 0 KB | Types only — no runtime bytes |
 | `@jupyter-kit/katex-cdn` | ~2 KB | KaTeX (~70 KB gz) fetched from CDN |
@@ -75,10 +78,11 @@ Installing a wrapper / plugin pulls in everything it depends on:
 
 | When you install… | You also get (transitively) |
 |---|---|
-| `@jupyter-kit/react` / `vue` / `wc` | `@jupyter-kit/core` |
+| `@jupyter-kit/react` / `vue` / `svelte` / `wc` | `@jupyter-kit/core` |
 | `@jupyter-kit/editor-codemirror` | `@codemirror/{state,view,commands,language,lang-python,legacy-modes}` |
 | `@jupyter-kit/executor-pyodide` | `@jupyter-kit/{editor-codemirror,comm}` + CodeMirror + grammars |
 | `@jupyter-kit/executor-webr` | `@jupyter-kit/editor-codemirror` + `webr` |
+| `@jupyter-kit/executor-jupyter` | `@jupyter-kit/comm` |
 | `@jupyter-kit/widgets` | `@jupyter-widgets/{base,base-manager,controls,html-manager,output}` + `@jupyter-kit/comm` |
 | `@jupyter-kit/katex-cdn` / `mathjax-cdn` | Math engine fetched from CDN at runtime — nothing else to install |
 | Any `@jupyter-kit/theme-<name>` | 8 syntax themes under `./syntax/*.css` included |
@@ -95,6 +99,7 @@ of time.
 |---|---|---|
 | `@jupyter-kit/react` | `<Notebook>` React component | `react`, `react-dom` ≥ 16.9 |
 | `@jupyter-kit/vue` | Vue 3 `<Notebook>` component | `vue` ≥ 3.3 |
+| `@jupyter-kit/svelte` | Svelte 5 `<Notebook>` component | `svelte` ≥ 5.0 |
 | `@jupyter-kit/wc` | `<jk-notebook>` Web Component | _(none)_ |
 | `@jupyter-kit/core` | Engine only — use from vanilla JS | _(none)_ |
 
@@ -167,15 +172,18 @@ import 'katex/dist/katex.min.css';
 <Notebook plugins={[createKatexPlugin()]} ... />
 ```
 
-### Edit + execute in browser
+### Edit + execute
 
-Installing an executor gives you editable cells **and** the matching
-runtime in one command — the editor plugin is pulled in transitively:
+Installing an executor gives you editable cells **and** a runtime in one
+command. For in-browser executors the editor plugin is pulled in
+transitively; `executor-jupyter` is a remote client only, so you install
+the editor separately if you want editable cells.
 
-| Install | Runs | Auto-installs |
-|---|---|---|
-| `@jupyter-kit/executor-pyodide` | Python via Pyodide (CDN) | `editor-codemirror` + CodeMirror + Python grammar + `comm` |
-| `@jupyter-kit/executor-webr webr` | R via WebR (CDN) | `editor-codemirror` + CodeMirror + R grammar |
+| Install | Runs | Location | Auto-installs |
+|---|---|---|---|
+| `@jupyter-kit/executor-pyodide` | Python via Pyodide | browser (CDN runtime) | `editor-codemirror` + CodeMirror + Python grammar + `comm` |
+| `@jupyter-kit/executor-webr webr` | R via WebR | browser (CDN runtime) | `editor-codemirror` + CodeMirror + R grammar |
+| `@jupyter-kit/executor-jupyter` | any Jupyter kernel | remote Jupyter Server | `comm` |
 
 ```tsx
 import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
@@ -196,6 +204,9 @@ need to comply with GPL terms. The rest of `@jupyter-kit` is Apache-2.0.
 :::
 
 See the [Pyodide demo](/demos/pyodide/) and [WebR demo](/demos/webr/).
+For `executor-jupyter`, see the
+[reference page](/reference/executor-jupyter/) — running a live demo
+requires a Jupyter Server you control, so there's no hosted demo.
 
 ### ipywidgets (sliders, buttons, dropdowns)
 

@@ -8,23 +8,30 @@ options exposed by that package, how they plug into the renderer, and any
 non-obvious behaviour. The left sidebar lists them by layer:
 
 - **Core & framework wrappers** — the renderer engine and its official
-  React / Vue / Web Component bindings. Start here.
+  React / Vue / Svelte / Web Component bindings. Start here.
 - **Plugins** — opt-in extensions (editor, math, widgets). Each returns a
   `Plugin` object that you pass to `<Notebook plugins={[…]} />`.
-- **Executors** — in-browser runtimes for edit-and-run. `executor-pyodide`
-  (Python) and `executor-webr` (R) — both read [their own security
-  caveats](#security-caveats-for-executors) before shipping.
+- **Executors** — runtimes for edit-and-run. `executor-pyodide` (Python)
+  and `executor-webr` (R) run in the browser; `executor-jupyter` talks to
+  a remote Jupyter Server. All three have distinct threat models —
+  see [security caveats](#security-caveats-for-executors).
 - **Themes** — chrome + syntax CSS bundles. No options; purely stylesheet
   imports.
 
 ## Security caveats for executors
 
-Anything that executes arbitrary source code in the visitor's browser
-changes the threat model of your site. Before embedding `executor-pyodide`
-or `executor-webr` on a public page, read the relevant reference page:
+Anything that executes arbitrary source code changes the threat model of
+your site. The location of execution matters — in-browser executors put
+the visitor's device on the hook, remote executors put your server on
+the hook. Before shipping any of these on a public page, read the
+relevant reference:
 
-- [Pyodide executor — security](/reference/executor-pyodide/#security)
-- [WebR executor — security](/reference/executor-webr/#security)
+- [Pyodide executor — security](/reference/executor-pyodide/#security) —
+  arbitrary code in the visitor's browser.
+- [WebR executor — security](/reference/executor-webr/#security) —
+  arbitrary code in the visitor's browser.
+- [Jupyter executor — security](/reference/executor-jupyter/#security) —
+  arbitrary code on the Jupyter Server (token = full shell access).
 
 The renderer itself (core + react / vue / wc) sanitises markdown and
 HTML/SVG outputs via DOMPurify + `rehype-sanitize` — see the

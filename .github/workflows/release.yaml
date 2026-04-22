@@ -55,8 +55,14 @@ jobs:
       - name: install
         run: pnpm install
 
-      - name: build
-        run: pnpm -r --filter "./packages/*" run build
+      # Build theme first so packages/theme/dist-publish/theme-*/ is fresh.
+      # The CSS is generated from packages/theme/less/ via build.mjs and is
+      # what release-all.sh ships as the @jupyter-kit/theme-* npm packages.
+      - name: build theme (regenerate CSS + dist-publish/theme-*)
+        run: pnpm --filter @jupyter-kit/theme run build
+
+      - name: build remaining packages
+        run: pnpm -r --filter "./packages/*" --filter "!@jupyter-kit/theme" run build
 
       - name: publish all public packages
         run: pnpm release

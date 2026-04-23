@@ -491,6 +491,9 @@ importers:
       jquery:
         specifier: ^3.7.1
         version: 3.7.1
+      jquery-ui:
+        specifier: ^1.14.0
+        version: 1.14.2
       tslib:
         specifier: ^2.6.0
         version: 2.8.1

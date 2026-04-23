@@ -14,3 +14,10 @@ import jquery from 'jquery';
 const g = globalThis as unknown as { jQuery?: unknown; $?: unknown };
 if (!g.jQuery) g.jQuery = jquery;
 if (!g.$) g.$ = jquery;
+
+// jquery-ui: register all widget mixins on `$.ui` (mouse, widget, slider,
+// draggable, etc). @jupyter-widgets/controls' slider widget reaches into
+// `$.ui.mouse` at construction time and only requires the slider module
+// itself — without us loading the full bundle here the dependency chain
+// (slider → mouse → widget → core) is broken.
+import 'jquery-ui/dist/jquery-ui.js';

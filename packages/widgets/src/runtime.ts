@@ -1,16 +1,12 @@
 import type { CommProvider } from '@jupyter-kit/comm';
 
-// `@jupyter-widgets/controls` slider widgets transitively depend on
-// jquery-ui, which expects `jQuery` / `$` on the global scope at module
-// init. Browser bundlers don't auto-expose CJS-style globals, so we
-// must seed `globalThis` before the html-manager module loads (its
-// import graph reaches jquery-ui synchronously).
-// @ts-expect-error — jquery has no bundled .d.ts
-import jquery from 'jquery';
-const g = globalThis as unknown as { jQuery?: unknown; $?: unknown };
-if (!g.jQuery) g.jQuery = jquery;
-if (!g.$) g.$ = jquery;
-
+// MUST be imported before @jupyter-widgets/html-manager. The shim sets
+// `globalThis.jQuery` (required by jquery-ui's slider init, which
+// @jupyter-widgets/controls pulls in synchronously). ES module imports
+// hoist together within a file, so inlining the assignment here would
+// race html-manager's evaluation. Keeping it as a separate side-effect
+// import puts jquery + the assignment fully ahead in the eval order.
+import './jquery-shim';
 import { HTMLManager } from '@jupyter-widgets/html-manager';
 
 // Widget CSS is shipped with `@jupyter-widgets/controls` but html-manager only

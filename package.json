@@ -1,7 +1,7 @@
 {
   "name": "jupyter-kit-workspace",
   "private": true,
-  "version": "3.0.0-rc.7",
+  "version": "3.0.0-rc.8",
   "description": "Monorepo for @jupyter-kit packages (core, react, vue, wc, plugins, executors, themes).",
   "type": "module",
   "scripts": {
@@ -16,6 +16,7 @@
     "eslint": "eslint --ext .ts,.tsx packages",
     "storybook": "pnpm --filter @jupyter-kit/storybook storybook",
     "storybook:build": "pnpm --filter @jupyter-kit/storybook build:static",
+    "bump": "node ./scripts/bump-version.mjs",
     "release": "./scripts/release-all.sh",
     "tag": "./scripts/tag-all.sh",
     "tag:push": "./scripts/tag-all.sh --push",

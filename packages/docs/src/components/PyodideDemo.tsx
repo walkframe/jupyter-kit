@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Notebook } from '@jupyter-kit/react';
 import { python } from '@jupyter-kit/core/langs/python';
 import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
@@ -11,8 +11,29 @@ import showcase from '@jupyter-kit/fixtures/ipynb/showcase';
 import lorenz from '@jupyter-kit/fixtures/ipynb/Lorenz';
 import widgetsGallery from '@jupyter-kit/fixtures/ipynb/widgets-gallery';
 
-import '@jupyter-kit/theme-monokai/monokai.css';
-import '@jupyter-kit/theme-monokai/syntax/monokai.css';
+// Theme CSS injected at runtime via ?inline rather than top-level import.
+// Top-level imports get bundled into the global page CSS, so a sibling
+// demo (e.g. WebRDemo's theme-grade3) ends up cascading over the demo
+// that's actually mounted. ?inline keeps the stylesheet inert until we
+// drop it into a <style> tag scoped to *this* demo's lifetime.
+import chromeMonokai from '@jupyter-kit/theme-monokai/monokai.css?inline';
+import syntaxOneDark from '@jupyter-kit/theme-monokai/syntax/one-dark.css?inline';
+
+function useScopedTheme(css: string, styleId: string): void {
+  useEffect(() => {
+    let node = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!node) {
+      node = document.createElement('style');
+      node.id = styleId;
+      document.head.append(node);
+    }
+    node.textContent = css;
+    return () => {
+      // Leave the <style> tag in place — other instances or hot-reloads
+      // may rely on it; clearing on unmount would race with the next mount.
+    };
+  }, [css, styleId]);
+}
 
 const FIXTURES: Record<string, unknown> = {
   showcase,
@@ -21,6 +42,8 @@ const FIXTURES: Record<string, unknown> = {
 };
 
 export default function PyodideDemo() {
+  useScopedTheme(chromeMonokai, 'jk-pyodide-chrome');
+  useScopedTheme(syntaxOneDark, 'jk-pyodide-syntax');
   const [status, setStatus] = useState<PyodideStatus>('idle');
   const [detail, setDetail] = useState<string | undefined>();
   const [fixture, setFixture] = useState<string>('showcase');

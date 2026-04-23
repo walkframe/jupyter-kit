@@ -1,13 +1,19 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  // jquery-shim is a separate entry (rather than inlined into runtime.ts)
-  // so the consuming JS engine evaluates it as its own module — ES module
-  // post-order then guarantees `globalThis.jQuery = ...` completes before
-  // any html-manager import body (and the jquery-ui graph it pulls)
-  // begins evaluating. Inlining loses that ordering because all `import`s
-  // within a single file hoist above the body.
-  entry: ['src/index.ts', 'src/runtime.ts', 'src/jquery-shim.ts'],
+  // jquery-shim and jquery-ui-shim are separate entries so each becomes
+  // its own JS module file in dist/. ES module post-order then enforces:
+  //   jquery-shim runs (sets globalThis.jQuery) → jquery-ui-shim runs
+  //   (imports jquery-ui, which mutates window.$.ui) → html-manager runs
+  //   (controls/slider sees $.ui.mouse).
+  // Collapsing into a single file would let the JS engine hoist all the
+  // imports together, defeating the ordering.
+  entry: [
+    'src/index.ts',
+    'src/runtime.ts',
+    'src/jquery-shim.ts',
+    'src/jquery-ui-shim.ts',
+  ],
   format: ['esm'],
   dts: true,
   sourcemap: true,

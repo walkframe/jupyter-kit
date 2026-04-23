@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/react",
-  "version": "3.0.0-rc.5",
+  "version": "3.0.0-rc.6",
   "description": "React wrapper around @jupyter-kit/core.",
   "type": "module",
   "main": "./dist/index.js",

@@ -111,11 +111,12 @@ export const Notebook = /* #__PURE__ */ defineComponent({
       el: () => containerRef.value,
     });
 
+    // Pass the ref object directly instead of a closure — the closure form
+    // gets a new identity on every render, causing Vue to detach/reattach
+    // the ref each pass and briefly reset `containerRef.value` to null.
     return () =>
       h('div', {
-        ref: (el: unknown) => {
-          containerRef.value = el as HTMLDivElement | null;
-        },
+        ref: containerRef,
         class: 'jupyter-kit-notebook',
       });
   },

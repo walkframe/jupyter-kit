@@ -232,14 +232,19 @@ import { createWidgetsPlugin } from '@jupyter-kit/widgets';
 import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
 
 <Notebook
-  executor={createPyodideExecutor()}
+  // Preloading `ipywidgets` is required for live mode — `autoloadImports`
+  // doesn't reliably see `from ipywidgets import ...`, and the comm shim
+  // must be wired before any cell runs. See the widgets reference for why.
+  executor={createPyodideExecutor({ packages: ['ipywidgets'] })}
   plugins={[createWidgetsPlugin()]}
   ...
 />
 ```
 
 See the [widgets gallery demo](/demos/pyodide/) (select _widgets-gallery_
-in the fixture dropdown).
+in the fixture dropdown) and the
+[widgets reference](/reference/widgets/#live-pyodide) for the preload
+gotcha.
 
 ## Upgrading CodeMirror, React, etc.
 

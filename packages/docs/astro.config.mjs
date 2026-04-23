@@ -134,5 +134,16 @@ export default defineConfig({
     define: {
       __webpack_public_path__: '""',
     },
+    build: {
+      commonjsOptions: {
+        // @jupyter-widgets/* (and some of their @jupyterlab transitives) ship
+        // ESM modules that still call `require()` at runtime — Rollup leaves
+        // those untouched by default, which surfaces in production as
+        // `ReferenceError: require is not defined`. transformMixedEsModules
+        // lets the CommonJS plugin rewrite those `require` calls into static
+        // imports at build time.
+        transformMixedEsModules: true,
+      },
+    },
   },
 });

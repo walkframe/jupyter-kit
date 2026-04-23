@@ -380,6 +380,9 @@ importers:
       '@jupyter-kit/theme':
         specifier: workspace:*
         version: link:../theme
+      '@jupyter-kit/widgets':
+        specifier: workspace:*
+        version: link:../widgets
       katex:
         specifier: ^0.16.9
         version: 0.16.22

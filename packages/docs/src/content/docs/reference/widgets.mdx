@@ -44,6 +44,65 @@ import { createWidgetsPlugin } from '@jupyter-kit/widgets';
 
 The executor's `commProvider` is auto-detected — no extra wiring.
 
+:::caution[Preload `ipywidgets`]
+`packages: ['ipywidgets']` is required, not just decorative. Pyodide's
+`autoloadImports` scanner walks the cell source for top-level `import X`
+statements but **misses `from ipywidgets import ...`** in many widget
+notebooks (and even when it sees them, the comm shim must already be
+wired before the first `.observe()` call). Preloading guarantees the
+package is ready and the JS-side comm handler is hooked up before any
+cell runs.
+:::
+
+## Bundler config (Vite, Rollup, webpack)
+
+`@jupyter-widgets/*` ship as ESM that still calls `require()` at runtime
+in a few spots — a webpack-era hybrid pattern. This is **upstream
+behaviour, not something `@jupyter-kit` can normalize from this side** —
+the `require()` calls live inside the published `@jupyter-widgets` builds.
+Modern bundlers don't inject a CJS shim for ESM by default, so without
+the right config you'll see one of these in the browser console:
+
+```
+Uncaught ReferenceError: require is not defined
+Uncaught ReferenceError: __webpack_public_path__ is not defined
+```
+
+### Vite (and Astro)
+
+```ts
+// vite.config.ts (or `vite:` block in astro.config)
+export default defineConfig({
+  build: {
+    commonjsOptions: {
+      // Rewrites `require()` calls inside ESM-flagged files into static
+      // imports at build time. Required for @jupyter-widgets/*.
+      transformMixedEsModules: true,
+    },
+  },
+  define: {
+    // The widget bundle references `__webpack_public_path__` for chunk
+    // URLs. Vite has no such global; replace with an empty string.
+    __webpack_public_path__: '""',
+  },
+});
+```
+
+`@jupyter-kit/widgets@3.0.0-rc.5+` already sets
+`globalThis.__webpack_public_path__ = ''` at module init as a runtime
+shim, so the `define` is belt-and-suspenders for older versions or
+unusual bundle splits.
+
+### webpack
+
+webpack handles both natively — no extra config required. Just install
+`@jupyter-kit/widgets` and use the `<Notebook>` component.
+
+### Rollup (without Vite)
+
+`@rollup/plugin-commonjs` with `transformMixedEsModules: true`. Pair with
+`@rollup/plugin-replace` for `__webpack_public_path__: '""'`.
+
 ## Bundle cost
 
 The plugin pulls in `@jupyter-widgets/{base,base-manager,controls,html-manager,output}`

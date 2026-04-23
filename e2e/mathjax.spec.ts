@@ -83,7 +83,7 @@ test('test mathjax', async ({ page }) => {
     // markdown
     expect(await cells[8].locator('.input_prompt').textContent()).not.toContain('In');
     const output = cells[8].locator('.rendered_html').first();
-    expect(await output.innerHTML()).toContain('<img src="https://github.com/righ/react-ipynb-renderer/raw/master/images/logo.png" alt="logo.png">');
+    expect(await output.innerHTML()).toContain('<img src="https://github.com/walkframe/jupyter-kit/raw/master/images/logo.png" alt="logo.png">');
   }
 
 });

@@ -1,0 +1,97 @@
+---
+title: Getting started
+description: Install and render your first notebook in under five minutes.
+---
+
+import { Tabs, TabItem, Code } from '@astrojs/starlight/components';
+
+## 1. Pick the minimum install for your case
+
+See the [install wizard](/install-wizard/) for the full case-by-case picker.
+The shortest possible setup:
+
+<Tabs>
+<TabItem label="React">
+
+```sh
+pnpm add @jupyter-kit/react @jupyter-kit/theme-default
+```
+
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { python } from '@jupyter-kit/core/langs/python';
+
+import notebook from './example.ipynb.json';
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+
+export default function App() {
+  return (
+    <Notebook
+      ipynb={notebook}
+      language="python"
+      languages={[python]}
+    />
+  );
+}
+```
+
+</TabItem>
+<TabItem label="Vue">
+
+```sh
+pnpm add @jupyter-kit/vue @jupyter-kit/theme-default
+```
+
+```vue
+<script setup lang="ts">
+import { Notebook } from '@jupyter-kit/vue';
+import { python } from '@jupyter-kit/core/langs/python';
+
+import notebook from './example.ipynb.json';
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+</script>
+
+<template>
+  <Notebook :ipynb="notebook" language="python" :languages="[python]" />
+</template>
+```
+
+</TabItem>
+<TabItem label="Web Component">
+
+```sh
+pnpm add @jupyter-kit/wc @jupyter-kit/theme-default
+```
+
+```html
+<link rel="stylesheet" href="/theme.css" />
+<jk-notebook id="nb" language="python"></jk-notebook>
+
+<script type="module">
+  import '@jupyter-kit/wc';
+  import { python } from '@jupyter-kit/core/langs/python';
+  import notebook from './example.ipynb.json';
+
+  const el = document.getElementById('nb');
+  el.languages = [python];
+  el.ipynb = notebook;
+</script>
+```
+
+</TabItem>
+</Tabs>
+
+That's it. The notebook renders with syntax highlighting, markdown, images,
+and Jupyter-style output formatting.
+
+## 2. Add things as you need them
+
+- Math? → [KaTeX or MathJax plugin](/install-wizard/)
+- Edit + run Python? → [Pyodide executor](/demos/pyodide/)
+- Edit + run R + plots? → [WebR executor](/demos/webr/)
+- Different theme? → [Theme switcher demo](/demos/themes/)
+
+None of these are required. Pull them in only when you actually use the
+feature.

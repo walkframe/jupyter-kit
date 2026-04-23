@@ -1,0 +1,109 @@
+---
+// Page-wide package-manager selector (npm / yarn / pnpm).
+// Writes the choice to localStorage and dispatches a `pm-change` event
+// that every <InstallLine /> on the page listens to. Defaults to `pnpm`.
+---
+
+<!-- `not-content` opts out of Starlight's `.sl-markdown-content > * + *`
+     auto-margin rule; without it, each non-first `<button>` inherits
+     `margin-top: 1rem` and the buttons stagger downward. -->
+<div class="pm-switcher not-content" role="group" aria-label="Package manager">
+  <span class="pm-label">Package manager</span>
+  <div class="pm-buttons">
+    <button type="button" class="pm-btn" data-pm="npm">npm</button>
+    <button type="button" class="pm-btn" data-pm="yarn">yarn</button>
+    <button type="button" class="pm-btn" data-pm="pnpm">pnpm</button>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'jupyter-kit-docs:pm';
+  const DEFAULT_PM = 'pnpm';
+
+  const readPM = (): 'npm' | 'yarn' | 'pnpm' => {
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      if (v === 'npm' || v === 'yarn' || v === 'pnpm') return v;
+    } catch {
+      /* localStorage unavailable */
+    }
+    return DEFAULT_PM;
+  };
+
+  const setActive = (pm: string) => {
+    document.querySelectorAll<HTMLButtonElement>('.pm-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.pm === pm);
+      btn.setAttribute('aria-pressed', String(btn.dataset.pm === pm));
+    });
+  };
+
+  const init = () => {
+    const current = readPM();
+    setActive(current);
+    document.querySelectorAll<HTMLButtonElement>('.pm-btn').forEach((btn) => {
+      if (btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        const pm = btn.dataset.pm ?? DEFAULT_PM;
+        try {
+          localStorage.setItem(STORAGE_KEY, pm);
+        } catch {
+          /* ignore */
+        }
+        setActive(pm);
+        document.dispatchEvent(new CustomEvent('pm-change', { detail: pm }));
+      });
+    });
+    // Fire an initial event so InstallLines that mounted first render with
+    // the stored choice (not always the default).
+    document.dispatchEvent(new CustomEvent('pm-change', { detail: current }));
+  };
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+  .pm-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0 1.25rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--sl-color-gray-7, rgba(127, 127, 127, 0.06));
+    border: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  .pm-label {
+    color: var(--sl-color-gray-2, #ccc);
+    font-weight: 500;
+  }
+  .pm-buttons {
+    display: inline-flex;
+    border: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .pm-btn {
+    background: transparent;
+    color: var(--sl-color-text);
+    border: none;
+    border-right: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: var(--sl-font-mono, ui-monospace, SFMono-Regular, monospace);
+    line-height: 1.4;
+    transition: background 120ms ease;
+  }
+  .pm-btn:last-child {
+    border-right: none;
+  }
+  .pm-btn:hover {
+    background: var(--sl-color-gray-6, rgba(127, 127, 127, 0.1));
+  }
+  .pm-btn.active {
+    background: var(--sl-color-accent, #3b82f6);
+    color: var(--sl-color-white, #fff);
+  }
+</style>

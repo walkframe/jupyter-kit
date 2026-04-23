@@ -1,0 +1,43 @@
+{
+  "name": "@jupyter-kit/mathjax-cdn",
+  "version": "3.0.0-rc.7",
+  "description": "MathJax via CDN <script> injection for @jupyter-kit/core. Tiny plugin, MathJax loads in the browser.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "dependencies": {
+    "remark-math": "^6.0.0",
+    "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walkframe/jupyter-kit.git",
+    "directory": "packages/mathjax-cdn"
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
+}

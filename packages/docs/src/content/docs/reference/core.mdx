@@ -1,0 +1,133 @@
+---
+title: '@jupyter-kit/core'
+description: Core renderer — RendererOptions, Plugin, CellHandle.
+---
+
+Framework-agnostic renderer engine. Every wrapper (React / Vue / WC) is a
+thin shell around this. Use `createRenderer(opts).mount(el, notebook)`
+directly if you're not using a wrapper.
+
+## `RendererOptions`
+
+Passed to `createRenderer()` and, by extension, every framework wrapper
+via props of the same shape.
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `plugins` | `Plugin[]` | `[]` | See [Plugin](#plugin). Rendering order is input order. |
+| `executor` | `Executor` | — | Runs editable code cells. Bring your own via `createPyodideExecutor()` / `createWebRExecutor()` or implement the [`Executor`](#executor) interface. |
+| `htmlFilter` | `(html: string) => string` | `defaultHtmlFilter` (DOMPurify) | Sanitiser applied to any raw `text/html` / SVG output. Replace with a stricter filter if you have your own threat model. |
+| `onSave` | `SaveHandler` | `undefined` | Override Ctrl/Cmd+S. Receives `(notebook, { download })`. Omit to default-download as `.ipynb`. |
+| `language` | `string` | `'python'` | Fallback cell language when the ipynb doesn't declare one. |
+| `languages` | `LanguageDef[]` | `[]` | Lezer parsers for syntax highlight. Import one per language from `@jupyter-kit/core/langs/*`. |
+| `bgTransparent` | `boolean` | `true` | Sets `data-bg-transparent="true"` on the root so themes can drop their background. |
+| `seqAsExecutionCount` | `boolean` | `false` | If `true`, numbers cells `1..n` instead of using the notebook's stored `execution_count`. |
+| `className` | `string` | `''` | Extra class on the root `<div class="jknb-root">`. |
+| `filename` | `string` | `'notebook.ipynb'` | Default filename for `ctx.download()` / Ctrl+S. |
+| `mathAlign` | `'left' \| 'center' \| 'right'` | `'left'` | Display-math alignment. Surfaces as `data-math-align` on the root; themed selectors target both MathJax and KaTeX. |
+
+## `Plugin`
+
+```ts
+export type Plugin = {
+  name: string;
+  remarkPlugins?: PluggableList;
+  rehypePlugins?: PluggableList;
+  setup?(ctx: RuntimeContext): void | Promise<void>;
+  onCodeBlock?(el: HTMLElement, language: string, ctx: RuntimeContext): void | Promise<void>;
+  onMarkdownRendered?(el: HTMLElement, ctx: RuntimeContext): void | Promise<void>;
+  renderOutput?(output: OutputType, slot: HTMLElement, ctx: RuntimeContext): boolean | void;
+  cellToolbar?(handle: CellHandle, ctx: RuntimeContext): HTMLElement[] | void;
+  teardown?(): void;
+};
+```
+
+Lifecycle hooks:
+
+- `setup` — once per mount, before any cell renders.
+- `onCodeBlock` — per code cell, with the `<code>` element already
+  highlighted statically. Replace the DOM to attach a live editor.
+- `onMarkdownRendered` — per markdown cell, after remark/rehype.
+- `renderOutput` — per output MIME bundle. Return `true` to claim the
+  output (suppress default rendering) or `undefined` to pass through.
+- `cellToolbar` — per cell, returns extra toolbar buttons.
+- `teardown` — once on unmount.
+
+## `Executor`
+
+```ts
+export type Executor = {
+  execute(source: string, language: string, signal?: AbortSignal): Promise<OutputType[]>;
+  commProvider?: CommProvider;
+};
+```
+
+`commProvider` is optional — implement it to drive interactive
+ipywidgets from your executor. See [@jupyter-kit/comm](/reference/comm/).
+
+## `CellHandle`
+
+Returned by `renderer.cell(i)` / `renderer.cells()`. Plugins receive them
+in `cellToolbar` callbacks.
+
+```ts
+export type CellHandle = {
+  readonly index: number;
+  readonly cell: CellType;
+  readonly el: HTMLElement;
+  setSource(source: string): void;
+  redrawInput(): void;
+  setOutputs(outputs: OutputType[]): void;
+  rerun(): Promise<void>;
+};
+```
+
+## `RuntimeContext`
+
+Passed to every plugin hook. Lets plugins introspect the notebook and
+mutate it.
+
+```ts
+export type RuntimeContext = {
+  readonly root: HTMLElement;
+  readonly options: Readonly<ResolvedOptions>;
+  readonly executor?: Executor;
+  readonly htmlFilter: HtmlFilter;
+  getCell(index: number): CellHandle | undefined;
+  cells(): CellHandle[];
+  nextExecutionCount(): number;
+  notebook(): Notebook;
+  deleteCell(index: number): void;
+  moveCell(from: number, to: number): void;
+  insertCell(index: number, cell: CellType): void;
+  duplicateCell(index: number): void;
+  download(filename?: string): void;
+};
+```
+
+## Language packs
+
+Import one per language; pass via `languages`:
+
+```ts
+import { python } from '@jupyter-kit/core/langs/python';
+import { r } from '@jupyter-kit/core/langs/r';
+
+<Notebook languages={[python, r]} language="python" ipynb={nb} />
+```
+
+Available subpaths: `python`, `javascript`, `r`, `julia`, `haskell`,
+`ruby`. See the [install wizard](/install-wizard/#syntax-highlighting-per-language)
+for which need extra peer deps.
+
+## Rendering output
+
+```ts
+import { createRenderer } from '@jupyter-kit/core';
+
+const renderer = createRenderer({ plugins: [], languages: [python] });
+const handle = renderer.mount(document.getElementById('host')!, notebook);
+// Later:
+handle.update(newNotebook);
+handle.destroy();
+```

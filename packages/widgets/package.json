@@ -1,0 +1,47 @@
+{
+  "name": "@jupyter-kit/widgets",
+  "version": "3.0.0-rc.7",
+  "description": "Jupyter widgets (ipywidgets) plugin for @jupyter-kit. Renders `application/vnd.jupyter.widget-view+json` outputs via @jupyter-widgets/html-manager. If the executor exposes a CommProvider (see @jupyter-kit/executor-pyodide), widgets become fully interactive; otherwise embedded widget-state is hydrated for a static view.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "dependencies": {
+    "@jupyter-kit/comm": "workspace:*",
+    "@jupyter-widgets/base": "^6.0.10",
+    "@jupyter-widgets/controls": "^5.0.11",
+    "@jupyter-widgets/html-manager": "^1.0.11",
+    "@jupyter-widgets/output": "^6.0.10",
+    "tslib": "^2.6.0"
+  },
+  "devDependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walkframe/jupyter-kit.git",
+    "directory": "packages/widgets"
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
+}

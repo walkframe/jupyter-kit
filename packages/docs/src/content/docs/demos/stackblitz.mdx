@@ -1,0 +1,69 @@
+---
+title: Try in StackBlitz
+description: Full runnable examples of @jupyter-kit across every framework wrapper — React, Vue, Svelte, and Web Components — editable in-browser.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Every framework wrapper has its own end-to-end example on StackBlitz. The
+projects boot Vite + Pyodide (or WebR), render the `showcase.ipynb` fixture,
+and expose a chrome / syntax theme picker and a file-upload slot for your
+own notebooks. Fork and hack away.
+
+<CardGrid>
+  <LinkCard
+    title="React"
+    href="https://stackblitz.com/~/github.com/righ/jupyter-kit-react-example"
+    description="@jupyter-kit/react + Pyodide. Source: github.com/righ/jupyter-kit-react-example"
+  />
+  <LinkCard
+    title="Vue 3"
+    href="https://stackblitz.com/~/github.com/righ/jupyter-kit-vue-example"
+    description="@jupyter-kit/vue + Pyodide. Source: github.com/righ/jupyter-kit-vue-example"
+  />
+  <LinkCard
+    title="Svelte 5"
+    href="https://stackblitz.com/~/github.com/righ/jupyter-kit-svelte-example"
+    description="@jupyter-kit/svelte + Pyodide. Source: github.com/righ/jupyter-kit-svelte-example"
+  />
+  <LinkCard
+    title="Web Component"
+    href="https://stackblitz.com/~/github.com/righ/jupyter-kit-wc-example-with-r"
+    description="@jupyter-kit/wc + WebR. Source: github.com/righ/jupyter-kit-wc-example-with-r"
+  />
+</CardGrid>
+
+## What's inside each example
+
+- **Showcase notebook** — the same `showcase.ipynb` fixture used in this
+  site's live demos, bundled as `src/showcase.json` (or `src/r.json` for
+  the WebR variant).
+- **Theme picker** — 13 chrome + 8 syntax themes imported as strings via
+  Vite's `?inline` query from `@jupyter-kit/theme-all`.
+- **File upload** — replace the default notebook with any local `.ipynb`
+  on the fly.
+- **All plugins wired** — `@jupyter-kit/katex-cdn`, `@jupyter-kit/widgets`,
+  `@jupyter-kit/editor-codemirror` (Shift+Enter to run).
+
+## Which to start from
+
+| Your stack | Fork this |
+|---|---|
+| React app | [jupyter-kit-react-example](https://github.com/righ/jupyter-kit-react-example) |
+| Vue 3 app | [jupyter-kit-vue-example](https://github.com/righ/jupyter-kit-vue-example) |
+| Svelte 5 app | [jupyter-kit-svelte-example](https://github.com/righ/jupyter-kit-svelte-example) |
+| Vanilla JS / Astro / plain `<script>` | [jupyter-kit-wc-example-with-r](https://github.com/righ/jupyter-kit-wc-example-with-r) |
+
+The Web Component example is also the smallest (no framework runtime) —
+good starting point if you want the renderer on a static page or inside
+another ecosystem.
+
+## Variants
+
+- **Python (Pyodide)** — React / Vue / Svelte versions run Python in-browser.
+- **R (WebR)** — the Web Component example runs R via WebR, with the
+  `@codemirror/legacy-modes` R mode for syntax highlighting.
+
+Swapping between them is a single-line change: replace
+`createPyodideExecutor` with `createWebRExecutor` (or vice versa) and pick
+the matching grammar / fixture.

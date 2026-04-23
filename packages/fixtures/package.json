@@ -1,0 +1,19 @@
+{
+  "name": "@jupyter-kit/fixtures",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared notebook JSON fixtures for storybook stories, docs demos, and tests.",
+  "type": "module",
+  "exports": {
+    "./ipynb/Lorenz": "./ipynb/Lorenz.json",
+    "./ipynb/r": "./ipynb/r.json",
+    "./ipynb/showcase": "./ipynb/showcase.json",
+    "./ipynb/widgets-gallery": "./ipynb/widgets-gallery.json",
+    "./ipynb/xss": "./ipynb/xss.json",
+    "./package.json": "./package.json"
+  },
+  "files": ["ipynb"],
+  "scripts": {
+    "typecheck": "true"
+  }
+}

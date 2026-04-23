@@ -1,0 +1,102 @@
+---
+title: '@jupyter-kit'
+description: Framework-agnostic Jupyter notebook renderer for the browser.
+template: splash
+hero:
+  tagline: Render Jupyter notebooks — and optionally run Python / R in the browser, or connect to a remote Jupyter kernel — from any framework.
+  actions:
+    - text: Get started
+      link: /getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: What's new in v3
+      link: /history/v3/
+      icon: document
+      variant: secondary
+    - text: View on GitHub
+      link: https://github.com/walkframe/jupyter-kit
+      icon: external
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Features
+
+<CardGrid>
+  <Card title="Framework-agnostic core" icon="setting">
+    Core has **zero** framework dependencies. First-class wrappers for
+    **React**, **Vue**, **Svelte**, and plain **Web Components** — pick
+    one or use the core directly from vanilla JS.
+  </Card>
+  <Card title="Read-only by default" icon="document">
+    The baseline install is a pure notebook *viewer* — markdown, code with
+    syntax highlighting, images, tables, and Jupyter-style outputs. Perfect
+    for docs sites and blogs.
+  </Card>
+  <Card title="Opt-in inline editing" icon="pencil">
+    Drop in `@jupyter-kit/editor-codemirror` to get editable cells, a
+    per-cell toolbar, and **Shift+Enter** to run. Nothing to configure.
+  </Card>
+  <Card title="Run Python in-browser" icon="rocket">
+    `@jupyter-kit/executor-pyodide` runs cells inside a dedicated Web
+    Worker via [Pyodide](https://pyodide.org). No server, no round-trip —
+    your code never leaves the browser.
+  </Card>
+  <Card title="Run R + plots in-browser" icon="rocket">
+    `@jupyter-kit/executor-webr` wraps [WebR](https://webr.r-wasm.org) and
+    captures R graphics as PNG. Same privacy posture as Python — execution
+    happens entirely on the client.
+  </Card>
+  <Card title="…or connect to a remote kernel" icon="puzzle">
+    `@jupyter-kit/executor-jupyter` speaks the Jupyter kernel WebSocket
+    protocol — point it at a Jupyter Server and cells run on any installed
+    kernel (Python, R, Julia, …). Good for full-fat scientific stacks.
+  </Card>
+  <Card title="Math: bundled or from CDN" icon="star">
+    Pick **KaTeX** or **MathJax**, and bundle the engine or pull it from a
+    CDN. CDN plugins add ~2 KB; bundled give you offline-safe math.
+  </Card>
+  <Card title="13 chrome + 8 syntax themes" icon="star">
+    Swap the look without touching JS — published as independent
+    `@jupyter-kit/theme-<name>` packages, or grab `@jupyter-kit/theme-all`.
+  </Card>
+  <Card title="Lezer syntax highlighting" icon="star">
+    Fast, tree-based highlighting for Python, JS, R, Julia, Haskell, and
+    Ruby. No Prism, no highlight.js — just the Lezer parsers you actually
+    use.
+  </Card>
+  <Card title="Small, tree-shakable" icon="approve-check">
+    Every package is opt-in. Want a read-only viewer with math? Skip
+    editor/executors. Want Python execution? Skip WebR. Baseline install
+    stays tiny.
+  </Card>
+</CardGrid>
+
+## Try it now
+
+<CardGrid>
+  <LinkCard title="Theme switcher" href="/demos/themes/"
+    description="Swap chrome, syntax, and math engine at runtime." />
+  <LinkCard title="Run Python in-browser" href="/demos/pyodide/"
+    description="Edit and execute a live Python notebook." />
+  <LinkCard title="Run R + plots in-browser" href="/demos/webr/"
+    description="Plot a normal density inline, right here." />
+</CardGrid>
+
+## Install the minimum you need
+
+```sh
+# Just view notebooks (React):
+pnpm add @jupyter-kit/react @jupyter-kit/theme-default
+
+# Or with Vue / Svelte / Web Components:
+pnpm add @jupyter-kit/vue    @jupyter-kit/theme-default
+pnpm add @jupyter-kit/svelte @jupyter-kit/theme-default
+pnpm add @jupyter-kit/wc     @jupyter-kit/theme-default
+```
+
+The core is pulled in transitively — you only ever install the wrapper you
+actually use.
+
+See the [install wizard](/install-wizard/) for case-by-case guidance on
+editing, math, Pyodide, WebR, and remote Jupyter kernels.

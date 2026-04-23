@@ -1,0 +1,55 @@
+---
+title: Run Python in the browser
+description: Execute Python cells with Pyodide — no server, no round-trip.
+---
+
+import PyodideDemo from '../../../components/PyodideDemo.tsx';
+
+<div class="privacy-callout">
+  <strong>Your code never leaves the browser.</strong> Execution happens
+  entirely inside a <code>Web Worker</code> in this page. No network request
+  carries your cell source. The Pyodide runtime itself (about 10 MB
+  compressed) is fetched once from the jsDelivr CDN, then cached — nothing
+  else is sent.
+</div>
+
+Edit any cell below, then press **Shift+Enter** (or click the ▶ toolbar
+button) to run:
+
+<PyodideDemo client:only="react" />
+
+## What's running
+
+- `@jupyter-kit/executor-pyodide` boots a dedicated Web Worker.
+- The worker loads Pyodide from `https://cdn.jsdelivr.net/pyodide/v0.26.2/full/`.
+- Cell source is `postMessage`'d to the worker, evaluated, and the result /
+  stdout / stderr / MIME bundle stream back.
+- `autoloadImports: true` scans `import` statements and installs packages
+  via `loadPackage` before the cell runs (if the package is in Pyodide's
+  registry).
+
+## Setup
+
+```sh
+pnpm add @jupyter-kit/executor-pyodide @jupyter-kit/editor-codemirror
+```
+
+```tsx
+import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+
+const executor = createPyodideExecutor({ autoloadImports: true });
+const plugins = [createEditorPlugin({ extensions: [pythonEditor()] })];
+
+<Notebook executor={executor} plugins={plugins} ... />
+```
+
+To pin a specific Pyodide version or host it yourself, pass `src` and
+`indexURL`:
+
+```ts
+createPyodideExecutor({
+  src: '/static/pyodide/pyodide.js',
+  indexURL: '/static/pyodide/',
+});
+```

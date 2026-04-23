@@ -1,4 +1,3 @@
-
-[submodule "src/styles/jupyter-themes"]
-	path = src/styles/jupyter-themes
-	url = https://github.com/righ/jupyter-themes.git
+[submodule "packages/theme/less/jupyter-themes"]
+	path = packages/theme/less/jupyter-themes
+	url = https://github.com/dunovank/jupyter-themes.git

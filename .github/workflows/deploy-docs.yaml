@@ -1,0 +1,48 @@
+name: Deploy Docs to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - master
+      - feature/docs
+    tags:
+      - "v*/docs"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build workspace packages
+        run: pnpm --filter "@jupyter-kit/docs..." build
+
+      - name: Resolve Cloudflare Pages branch alias
+        id: cf
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            # e.g. "v3.0.0/docs" -> "v3.0.0"
+            echo "branch=${GITHUB_REF_NAME%/docs}" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/docs/dist --project-name=jupyter-kit --branch=${{ steps.cf.outputs.branch }}
+          packageManager: pnpm

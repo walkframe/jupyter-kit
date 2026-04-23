@@ -1,0 +1,107 @@
+---
+title: '@jupyter-kit/executor-pyodide'
+description: In-browser Python executor — PyodideExecutorOptions and security notes.
+---
+
+Runs Python cells with [Pyodide](https://pyodide.org/) inside a dedicated
+Web Worker. Exports `createPyodideExecutor(options)` returning an
+[`Executor`](/reference/core/#executor) ready to pass to `<Notebook
+executor={…} />`.
+
+## `PyodideExecutorOptions`
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `src` | `string \| string[]` | jsdelivr `pyodide.js` | URL of `pyodide.js` loaded inside the worker, or an ordered fallback list. Each entry is tried until one loads. |
+| `indexURL` | `string \| string[]` | derived from `src` | Directory URL for `.wasm` / `.whl` files. If `src` is an array, supply a matching array (same length) or omit to auto-derive per-candidate. |
+| `version` | `string` | `'0.26.2'` | Used to build default `src` / `indexURL` when those aren't set. |
+| `timeoutMs` | `number` | `10000` | Per-candidate boot timeout. `0` disables. |
+| `packages` | `string[]` | `[]` | Packages to `loadPackage(...)` (or fall back to `micropip.install`) before any cell runs. |
+| `autoloadImports` | `boolean` | `false` | If `true`, scans cell source for `import` statements and installs matching Pyodide packages before execution. |
+| `figureFormats` | `('svg' \| 'png')[]` | `['svg']` | matplotlib output formats captured at cell end. |
+| `onStatus` | `(status, detail?) => void` | — | Progress callback. `status` is one of `'idle' \| 'loading' \| 'installing' \| 'running' \| 'ready' \| 'error'`. |
+
+## Usage
+
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { createPyodideExecutor } from '@jupyter-kit/executor-pyodide';
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+import { python as pythonEditor } from '@codemirror/lang-python';
+
+const executor = createPyodideExecutor({
+  autoloadImports: true,
+  packages: ['numpy', 'matplotlib'],
+  onStatus: (s, d) => console.log('pyodide:', s, d),
+});
+
+<Notebook
+  executor={executor}
+  plugins={[createEditorPlugin({ languages: { python: pythonEditor() } })]}
+  ipynb={nb}
+  language="python"
+/>;
+```
+
+## How it works
+
+- Worker boots Pyodide from the CDN (~10 MB WASM, one-time, browser-cached).
+- Cell source is `postMessage`'d to the worker, evaluated with an IPython-
+  style wrapper that captures the last expression + stdout / stderr.
+- The result / any matplotlib figures flow back as `display_data` and
+  `execute_result` outputs.
+- A `CommProvider` is exposed on the executor so
+  [`@jupyter-kit/widgets`](/reference/widgets/) can drive interactive
+  ipywidgets.
+
+## Security
+
+:::danger[Executing arbitrary code in visitors' browsers]
+`executor-pyodide` is opt-in code execution. Everything below runs on the
+*visitor's* device with the visitor's network access, clipboard, etc.
+:::
+
+Know this before shipping Pyodide on a public page:
+
+- **All cell source runs in a Web Worker** — separate thread, but **not**
+  a security sandbox. It shares the main origin's cookies and can call
+  `fetch` back to your site or any CORS-permissive endpoint.
+- **Untrusted ipynbs run untrusted code.** If visitors upload their own
+  `.ipynb` (like the demo here does), those cells can:
+  - make network requests from the visitor's IP,
+  - read / write `localStorage` / `sessionStorage` of your origin,
+  - send `postMessage` to the main thread (which our worker ignores, but
+    other code on your page may not),
+  - create WebSocket connections,
+  - exfiltrate data via `fetch` to attacker-controlled URLs.
+- **Pyodide is a Python interpreter, not a permission model.** There is
+  no syscall allow-list; `os.environ`, `urllib`, etc. all work.
+- **CDN pinning.** Default `src` points at jsdelivr's `pyodide/latest/`
+  directory. Pin `version` to avoid silent runtime-binary upgrades.
+- **Matplotlib output is sanitised** — PNGs are captured as base64 data
+  URLs, SVG is run through `htmlFilter` (DOMPurify by default). This
+  prevents **drive-by** XSS from a plot containing a `<script>` element,
+  but it doesn't stop Python code from calling arbitrary APIs directly
+  while it runs.
+
+### Mitigation checklist
+
+- Consider running the worker under a restrictive Content-Security-Policy
+  (`connect-src`, `script-src`) so exfil targets are limited.
+- If the notebook comes from an untrusted source, gate execution behind a
+  user confirmation (click-to-run), not auto-execute on mount.
+- Don't expose Pyodide on pages that also handle authenticated session
+  cookies — any cell can `fetch('/api/me')` and read the response.
+- Subresource-integrity is **not** applied to Pyodide assets (jsdelivr
+  does not serve SRI for Pyodide wheels). Self-host the distribution if
+  you need SRI.
+
+### What the renderer itself does NOT protect against
+
+The DOMPurify / `rehype-sanitize` pipeline protects the **rendered DOM**
+from XSS — script tags, `javascript:` hrefs, `onerror=` etc. are stripped
+before they reach the browser. The executor opens a separate attack
+surface that runs BEFORE that pipeline: anything Python does with
+`fetch`, `window`, or `document` via Pyodide's `js` module bypasses the
+renderer's sanitiser entirely. Treat executor input the same as you'd
+treat a remote-code-execution endpoint.

@@ -1,0 +1,47 @@
+{
+  "name": "@jupyter-kit/svelte",
+  "version": "3.0.0-rc.7",
+  "description": "Svelte 5 wrapper around @jupyter-kit/core.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "svelte": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "svelte-package -i src -o dist",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json",
+    "clean": "rm -rf dist .svelte-kit"
+  },
+  "dependencies": {
+    "@jupyter-kit/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/package": "^2.3.7",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "svelte": "^5.16.0",
+    "svelte-check": "^4.1.1"
+  },
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walkframe/jupyter-kit.git",
+    "directory": "packages/svelte"
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
+}

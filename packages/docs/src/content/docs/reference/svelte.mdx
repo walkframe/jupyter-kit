@@ -1,0 +1,40 @@
+---
+title: '@jupyter-kit/svelte'
+description: Svelte 5 component reference — <Notebook /> props.
+---
+
+Svelte 5 wrapper. Same semantic props as
+[`@jupyter-kit/react`](/reference/react/#ipynbrenderer-props) — see that
+page for the full table; Svelte exposes them as runes-style props on the
+same `<Notebook>` component.
+
+```svelte
+<script lang="ts">
+  import { Notebook } from '@jupyter-kit/svelte';
+  import { python } from '@jupyter-kit/core/langs/python';
+  import notebook from './my.ipynb';
+
+  import '@jupyter-kit/theme-default/default.css';
+  import '@jupyter-kit/theme-default/syntax/one-dark.css';
+</script>
+
+<Notebook
+  ipynb={notebook}
+  language="python"
+  languages={[python]}
+/>
+```
+
+## Peer dependencies
+
+`svelte` ≥ 5.0. Uses the runes-based `$props()` / `$effect()` APIs — not
+compatible with Svelte 4 components. When `ipynb` changes, the renderer
+re-uses its existing mount via `handle.update(...)` so CodeMirror editors
+(and any other in-cell state) are not torn down; option-shape changes
+(plugins, executor, htmlFilter, etc.) trigger a full remount.
+
+## Events
+
+| Prop | Fires when |
+|---|---|
+| `onload` | First mount is complete — executor / plugins are wired up and cells rendered. |

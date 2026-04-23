@@ -1,0 +1,84 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# XSS attack surface\n",
+        "\n",
+        "Every cell below intentionally contains a payload that should *not* execute. If any runs, the test fails."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Inline script tag in markdown source\n",
+        "\n",
+        "<script>window.__xssMarkdown = true; document.title = 'pwned-md-script';</script>\n",
+        "\n",
+        "<img src=x onerror=\"window.__xssImgOnerror = true; document.title = 'pwned-md-img'\" />\n",
+        "\n",
+        "<svg><script>window.__xssSvgScript = true;</script></svg>\n",
+        "\n",
+        "<a href=\"javascript:window.__xssJsHref = true\">click me</a>\n",
+        "\n",
+        "<iframe src=\"javascript:window.__xssIframe = true\"></iframe>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {},
+      "source": ["# Code cell below; source stays inert even if rendered.\n", "print('<script>window.__xssCodeSrc = true;</script>')"],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": ["<script>window.__xssStreamScript = true;</script>\n"]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/html": [
+              "<div>Benign HTML output</div>\n",
+              "<script>window.__xssHtmlOutputScript = true; document.title = 'pwned-html-output';</script>\n",
+              "<img src=x onerror=\"window.__xssHtmlOutputImg = true; document.title = 'pwned-html-img'\" />\n",
+              "<iframe srcdoc=\"<script>window.__xssHtmlOutputIframe = true;</script>\"></iframe>"
+            ],
+            "text/plain": ["<HTML object>"]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "execute_result",
+          "execution_count": 1,
+          "data": {
+            "image/svg+xml": [
+              "<?xml version=\"1.0\"?>\n",
+              "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"60\">\n",
+              "  <rect width=\"60\" height=\"60\" fill=\"green\" />\n",
+              "  <script type=\"text/javascript\">window.__xssSvgMimeScript = true;</script>\n",
+              "  <a xlink:href=\"javascript:window.__xssSvgAnchor = true\"><text x=\"10\" y=\"30\">link</text></a>\n",
+              "</svg>"
+            ],
+            "text/plain": ["<SVG>"]
+          },
+          "metadata": {}
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 4
+}

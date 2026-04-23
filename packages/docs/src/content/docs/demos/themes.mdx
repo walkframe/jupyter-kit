@@ -1,0 +1,37 @@
+---
+title: Theme switcher
+description: Swap chrome, syntax, and math engine at runtime.
+---
+
+import ThemeSwitcherDemo from '../../../components/ThemeSwitcherDemo.tsx';
+
+Use the dropdowns to swap themes and the math engine. Chrome styles the
+notebook shell (cell borders, prompts, tables); the syntax theme colors
+pre-rendered code spans; the math engine renders `$…$` and `$$…$$`. The
+notebook here is rendered **read-only** — this is the minimum-install
+configuration, just with runtime styling controls.
+
+Changing the math engine reloads the page (the underlying markdown
+pipeline is built once at mount, so the plugins can't be hot-swapped).
+
+<ThemeSwitcherDemo client:only="react" />
+
+## How it works
+
+The notebook renderer is a plain DOM tree rooted on `.jknb-root`. All
+styling comes from CSS — so switching themes is just swapping a stylesheet.
+
+```ts
+// Static imports: theme stays for the lifetime of the page.
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+
+// Runtime swap: use ?inline to load each stylesheet as a string and
+// assign it to a single <style> element on demand.
+import gruvboxd from '@jupyter-kit/theme-gruvboxd/gruvboxd.css?inline';
+styleEl.textContent = gruvboxd;
+```
+
+Every chrome theme package (`@jupyter-kit/theme-default`, `…-dark`, etc.)
+includes all syntax themes under `./syntax/*.css` too, so you only install
+one package per chrome you actually want.

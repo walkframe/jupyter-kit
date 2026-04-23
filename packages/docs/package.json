@@ -1,0 +1,49 @@
+{
+  "name": "@jupyter-kit/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Documentation site for @jupyter-kit, built with Astro + Starlight.",
+  "scripts": {
+    "dev": "concurrently -k -n theme,docs -c magenta,cyan 'pnpm -F @jupyter-kit/theme watch' 'astro dev'",
+    "dev:only": "astro dev",
+    "start": "pnpm run dev",
+    "build": "pnpm -F @jupyter-kit/theme build && astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "clean": "rm -rf dist .astro"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.1.0",
+    "@astrojs/starlight": "^0.30.0",
+    "@jupyter-kit/core": "workspace:*",
+    "@jupyter-kit/editor-codemirror": "workspace:*",
+    "@jupyter-kit/executor-pyodide": "workspace:*",
+    "@jupyter-kit/executor-webr": "workspace:*",
+    "@jupyter-kit/fixtures": "workspace:*",
+    "@jupyter-kit/katex-cdn": "workspace:*",
+    "@jupyter-kit/mathjax-cdn": "workspace:*",
+    "@jupyter-kit/react": "workspace:*",
+    "@jupyter-kit/theme": "workspace:*",
+    "@jupyter-kit/widgets": "workspace:*",
+    "@codemirror/commands": "^6.6.0",
+    "@codemirror/language": "^6.10.2",
+    "@codemirror/lang-python": "^6.1.6",
+    "@codemirror/legacy-modes": "^6.4.0",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.28.0",
+    "astro": "^5.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.3.0",
+    "concurrently": "^9.0.0",
+    "typescript": "^5.4.2"
+  },
+  "author": "righ",
+  "license": "GPL-2.0-or-later"
+}

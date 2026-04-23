@@ -1,0 +1,157 @@
+---
+title: '@jupyter-kit/executor-jupyter'
+description: Remote Jupyter kernel executor — talks to a running Jupyter Server over WebSocket. Language-agnostic (Python, R, Julia, ...).
+---
+
+Runs cells against a **remote Jupyter kernel** — talks to a running
+[Jupyter Server](https://jupyter-server.readthedocs.io/)
+(or JupyterHub / BinderHub / Enterprise Gateway) over the standard kernel
+WebSocket protocol.
+
+Because it speaks the protocol — not Python directly — it is **language-
+agnostic**. Any installed Jupyter kernel works (Python via `ipykernel`,
+R via `IRkernel`, Julia via `IJulia`, TypeScript via `ITypescript`, …).
+
+| | runtime | location |
+|---|---|---|
+| [`executor-pyodide`](/reference/executor-pyodide/) | Python (CPython → WASM) | browser |
+| [`executor-webr`](/reference/executor-webr/) | R (compiled → WASM) | browser |
+| **`executor-jupyter`** | any Jupyter kernel | remote server |
+
+Exports `createJupyterExecutor(options)` returning an
+[`Executor`](/reference/core/#executor) ready to pass to `<Notebook
+executor={…} />`.
+
+## `JupyterExecutorOptions`
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `baseUrl` (required) | `string` | — | Jupyter Server base URL, e.g. `http://localhost:8888`. No trailing slash. |
+| `token` | `string` | — | API token. Sent as `Authorization: token <value>` for REST and `?token=<value>` on the WebSocket. |
+| `kernelName` | `string` | `'python3'` | Kernel spec name. Ignored when `kernelId` is given. |
+| `kernelId` | `string` | — | Reuse a pre-existing kernel instead of starting one. |
+| `shutdownOnDispose` | `boolean` | `true` | Shut down the kernel on `dispose()` (only when this executor started it). |
+| `onStatus` | `(status, detail?) => void` | — | Lifecycle callback. `status` is one of `'idle' \| 'connecting' \| 'starting-kernel' \| 'busy' \| 'ready' \| 'error' \| 'disconnected'`. |
+
+The returned executor also exposes a `dispose()` method — call it when the
+`<Notebook>` unmounts to shut down the kernel and close the WebSocket.
+
+## Usage
+
+```tsx
+import { Notebook } from '@jupyter-kit/react';
+import { createJupyterExecutor } from '@jupyter-kit/executor-jupyter';
+import { createEditorPlugin } from '@jupyter-kit/editor-codemirror';
+import { python as pythonEditor } from '@codemirror/lang-python';
+import { useEffect, useMemo } from 'react';
+
+function MyNotebook({ ipynb }) {
+  const executor = useMemo(
+    () =>
+      createJupyterExecutor({
+        baseUrl: 'http://localhost:8888',
+        token: import.meta.env.VITE_JUPYTER_TOKEN,
+        kernelName: 'python3',
+        onStatus: (s, d) => console.log('jupyter:', s, d),
+      }),
+    [],
+  );
+
+  // Shut down the kernel on unmount.
+  useEffect(() => () => { executor.dispose(); }, [executor]);
+
+  return (
+    <Notebook
+      executor={executor}
+      plugins={[createEditorPlugin({ languages: { python: pythonEditor() } })]}
+      ipynb={ipynb}
+      language="python"
+    />
+  );
+}
+```
+
+## Server setup
+
+The Jupyter Server must allow the renderer's origin in CORS. Minimum dev
+config:
+
+```bash
+jupyter server \
+  --ServerApp.token=YOUR_TOKEN \
+  --ServerApp.allow_origin='http://localhost:6006' \
+  --ServerApp.allow_credentials=True \
+  --ServerApp.disable_check_xsrf=True
+```
+
+Or put the same in `~/.jupyter/jupyter_server_config.py`:
+
+```python
+c.ServerApp.allow_origin = 'http://localhost:6006'
+c.ServerApp.allow_credentials = True
+c.ServerApp.disable_check_xsrf = True
+```
+
+For production, restrict `allow_origin` to your renderer's actual origin.
+`allow_origin='*'` disables `allow_credentials` per W3C — acceptable here
+because auth rides on the `?token=` query param, not on cookies.
+
+## How it works
+
+- `createJupyterExecutor({...})` returns an executor object. No network
+  traffic yet.
+- On the first `execute()` call: `POST /api/kernels` starts a fresh kernel
+  (unless `kernelId` was given); a WebSocket to
+  `/api/kernels/<id>/channels` opens.
+- Each cell execute sends an `execute_request` on the shell channel;
+  `iopub` messages are collected (stream, display_data, execute_result,
+  error) until a matching `status: idle` arrives.
+- `dispose()` closes the WS and `DELETE /api/kernels/<id>` shuts the
+  kernel down (when this executor owns it).
+
+## Comm support
+
+`commProvider` is implemented, so [`@jupyter-kit/widgets`](/reference/widgets/)
+works end-to-end with `ipywidgets` running in the remote kernel. `comm_open`
+messages from the kernel are routed to handlers registered via
+`commProvider.onCommOpen(...)`; frontend→kernel traffic is forwarded on the
+shell channel.
+
+## Limitations
+
+- `allow_stdin: false` — interactive `input()` calls are not supported.
+- v1 binary message framing is not implemented; Jupyter Server defaults to
+  JSON over WebSocket so this is rarely an issue.
+- Reconnect-on-drop is not built in. If the WebSocket closes, the next
+  `execute()` call re-establishes a fresh connection but in-flight requests
+  are lost.
+
+## Security
+
+:::danger[Server-side code execution]
+`executor-jupyter` runs arbitrary cell source **on the Jupyter Server**
+under whatever user account the server process was started as. The threat
+model is completely different from the in-browser executors.
+:::
+
+- **Token = full execution rights.** Anyone with the `token` can run
+  anything the server user can. Treat it like an SSH key: never commit it,
+  never put it in a client-side bundle that ships to untrusted users.
+- **Kernel state is shared across cells.** Variables / imports / file
+  handles persist for the lifetime of the kernel. If you expose this to
+  multiple visitors, they share a kernel (and each other's state) unless
+  you create a new executor per session.
+- **Filesystem & network access.** The kernel can read any file the server
+  user can read, open outbound connections, run `subprocess`, etc. Put
+  the server inside an isolated container or limited-permission VM.
+- **CORS configuration leaks auth in dev.** `disable_check_xsrf=True`
+  removes the CSRF protection Jupyter normally applies — fine for local
+  dev, but don't deploy that flag to production.
+- **Consider a per-user proxy.** JupyterHub spawns a kernel per
+  authenticated user and handles isolation. If your renderer is on a
+  public page, reverse-proxy through JupyterHub rather than exposing a
+  single shared Jupyter Server.
+
+Unlike `executor-pyodide` / `executor-webr`, the renderer itself is **not**
+the attack surface — your server is. The usual web-app threat model
+(token hygiene, CSRF, rate limiting, resource quotas) applies.

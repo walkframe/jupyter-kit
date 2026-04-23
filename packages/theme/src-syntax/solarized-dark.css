@@ -1,0 +1,33 @@
+/* Solarized Dark — for @jupyter-kit/highlight (Lezer classHighlighter tokens). */
+.jknb-root pre,
+.jknb-root code {
+  color: #93a1a1;
+}
+.jknb-root .tok-comment { color: #586e75; font-style: italic; }
+.jknb-root .tok-keyword,
+.jknb-root .tok-controlKeyword,
+.jknb-root .tok-definitionKeyword,
+.jknb-root .tok-moduleKeyword,
+.jknb-root .tok-operatorKeyword { color: #859900; }
+.jknb-root .tok-string,
+.jknb-root .tok-character { color: #2aa198; }
+.jknb-root .tok-number,
+.jknb-root .tok-bool,
+.jknb-root .tok-null { color: #d33682; }
+.jknb-root .tok-typeName,
+.jknb-root .tok-className { color: #b58900; }
+.jknb-root .tok-functionName,
+.jknb-root .tok-labelName { color: #268bd2; }
+.jknb-root .tok-propertyName,
+.jknb-root .tok-attributeName { color: #268bd2; }
+.jknb-root .tok-variableName { color: #93a1a1; }
+.jknb-root .tok-operator,
+.jknb-root .tok-derefOperator { color: #6c71c4; }
+.jknb-root .tok-meta,
+.jknb-root .tok-punctuation,
+.jknb-root .tok-bracket { color: #93a1a1; }
+.jknb-root .tok-invalid { color: #fdf6e3; background: #dc322f; }
+.jknb-root .tok-heading { color: #268bd2; font-weight: bold; }
+.jknb-root .tok-link { color: #2aa198; text-decoration: underline; }
+.jknb-root .tok-emphasis { font-style: italic; }
+.jknb-root .tok-strong { font-weight: bold; }

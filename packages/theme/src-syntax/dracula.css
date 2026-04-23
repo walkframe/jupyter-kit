@@ -1,0 +1,37 @@
+/* Dracula — for @jupyter-kit/highlight (Lezer classHighlighter tokens). */
+.jknb-root pre,
+.jknb-root code {
+  color: #f8f8f2;
+}
+.jknb-root .tok-comment { color: #6272a4; font-style: italic; }
+.jknb-root .tok-keyword,
+.jknb-root .tok-controlKeyword,
+.jknb-root .tok-definitionKeyword,
+.jknb-root .tok-moduleKeyword,
+.jknb-root .tok-operatorKeyword { color: #ff79c6; }
+.jknb-root .tok-string,
+.jknb-root .tok-character { color: #f1fa8c; }
+.jknb-root .tok-number,
+.jknb-root .tok-bool,
+.jknb-root .tok-null { color: #bd93f9; }
+.jknb-root .tok-typeName,
+.jknb-root .tok-className { color: #8be9fd; font-style: italic; }
+.jknb-root .tok-functionName,
+.jknb-root .tok-labelName { color: #50fa7b; }
+.jknb-root .tok-propertyName,
+.jknb-root .tok-attributeName { color: #ffb86c; }
+.jknb-root .tok-variableName { color: #f8f8f2; }
+.jknb-root .tok-operator,
+.jknb-root .tok-derefOperator,
+.jknb-root .tok-arithmeticOperator,
+.jknb-root .tok-logicOperator,
+.jknb-root .tok-bitwiseOperator,
+.jknb-root .tok-compareOperator { color: #ff79c6; }
+.jknb-root .tok-meta,
+.jknb-root .tok-punctuation,
+.jknb-root .tok-bracket { color: #f8f8f2; }
+.jknb-root .tok-invalid { color: #f8f8f2; background: #ff5555; }
+.jknb-root .tok-heading { color: #50fa7b; font-weight: bold; }
+.jknb-root .tok-link { color: #8be9fd; text-decoration: underline; }
+.jknb-root .tok-emphasis { font-style: italic; }
+.jknb-root .tok-strong { font-weight: bold; }

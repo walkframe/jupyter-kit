@@ -1,0 +1,18 @@
+@jupyter-kit/docs is licensed under the GNU General Public License,
+version 2.0 or any later version, because the live WebR demo depends on
+@jupyter-kit/executor-webr → webr → the R interpreter, which is
+GPL-2.0-or-later.
+
+The built documentation site ships that WebR integration as part of its
+runtime, so the site as a whole inherits GPL-2.0-or-later.
+
+A copy of GPL-2.0 is available at:
+  https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+
+GPL-3.0:
+  https://www.gnu.org/licenses/gpl-3.0.txt
+
+If you want an Apache-2.0-licensed deliverable, drop the WebR demo + the
+`@jupyter-kit/executor-webr` dependency. All other packages in this
+monorepo (core, react, vue, wc, theme, math plugins, editor-codemirror,
+executor-pyodide) are Apache-2.0.

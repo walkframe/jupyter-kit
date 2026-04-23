@@ -1,0 +1,232 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# ipywidgets Gallery\n",
+        "\n",
+        "A tour of interactive widgets. Run each cell (Shift+Enter) to see the widget, then try dragging / typing / clicking."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "import ipywidgets as widgets\n",
+        "from IPython.display import display"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Sliders\n",
+        "\n",
+        "`IntSlider` and `FloatSlider` — the bread-and-butter interactive inputs."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "int_slider = widgets.IntSlider(value=5, min=0, max=20, step=1, description='int')\n",
+        "float_slider = widgets.FloatSlider(value=1.5, min=0.0, max=10.0, step=0.1, description='float')\n",
+        "widgets.VBox([int_slider, float_slider])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Text input\n",
+        "\n",
+        "Typed input — integers, floats, free-form strings. The `Textarea` allows multi-line input."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "widgets.VBox([\n",
+        "    widgets.IntText(value=42, description='int'),\n",
+        "    widgets.FloatText(value=3.14, description='float'),\n",
+        "    widgets.Text(value='hello', placeholder='type here', description='text'),\n",
+        "    widgets.Textarea(value='line 1\\nline 2', description='area'),\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Choices\n",
+        "\n",
+        "Pick one from a set — `Dropdown`, `RadioButtons`, or `Select`."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "options = ['apple', 'banana', 'cherry', 'durian']\n",
+        "widgets.VBox([\n",
+        "    widgets.Dropdown(options=options, description='dropdown'),\n",
+        "    widgets.RadioButtons(options=options, description='radio'),\n",
+        "    widgets.Select(options=options, description='select'),\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Toggles & buttons\n",
+        "\n",
+        "Boolean controls and push buttons."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "widgets.VBox([\n",
+        "    widgets.Checkbox(value=True, description='checkbox'),\n",
+        "    widgets.ToggleButton(value=False, description='toggle'),\n",
+        "    widgets.ToggleButtons(options=['cold', 'warm', 'hot'], description='3-way'),\n",
+        "    widgets.Button(description='click me', button_style='primary'),\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Button click handler\n",
+        "\n",
+        "A button wired up to an `Output` widget. Clicking appends a log line."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "btn = widgets.Button(description='Add log line', icon='plus')\n",
+        "log = widgets.Output()\n",
+        "\n",
+        "counter = {'n': 0}\n",
+        "def on_click(_):\n",
+        "    counter['n'] += 1\n",
+        "    with log:\n",
+        "        print(f'clicked {counter[\"n\"]} time(s)')\n",
+        "btn.on_click(on_click)\n",
+        "\n",
+        "widgets.VBox([btn, log])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Date / color / file picker"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "import datetime\n",
+        "widgets.VBox([\n",
+        "    widgets.DatePicker(value=datetime.date.today(), description='date'),\n",
+        "    widgets.ColorPicker(value='#2196f3', description='color'),\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## `interact` decorator\n",
+        "\n",
+        "Shortest path from a function to a widget — `@interact` auto-creates controls for every argument."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "from ipywidgets import interact\n",
+        "\n",
+        "@interact(x=(0, 10), y=['+', '-', '*', '/'], z=1.5)\n",
+        "def compute(x=3, y='+', z=1.5):\n",
+        "    ops = {'+': x + z, '-': x - z, '*': x * z, '/': x / z if z else float('inf')}\n",
+        "    print(f'{x} {y} {z} = {ops[y]}')"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Layout: HBox / VBox / Accordion / Tab\n",
+        "\n",
+        "Combine widgets into panels."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "tab_contents = [\n",
+        "    widgets.VBox([widgets.IntSlider(description=f'slider {i}') for i in range(3)]),\n",
+        "    widgets.HBox([widgets.Button(description=str(i)) for i in range(5)]),\n",
+        "    widgets.Textarea(value='write notes here...'),\n",
+        "]\n",
+        "tab = widgets.Tab(children=tab_contents)\n",
+        "tab.set_title(0, 'Sliders')\n",
+        "tab.set_title(1, 'Buttons')\n",
+        "tab.set_title(2, 'Notes')\n",
+        "\n",
+        "acc = widgets.Accordion(children=[\n",
+        "    widgets.Text(description='name'),\n",
+        "    widgets.IntRangeSlider(value=[25, 75], min=0, max=100, description='range'),\n",
+        "])\n",
+        "acc.set_title(0, 'Details')\n",
+        "acc.set_title(1, 'Preferences')\n",
+        "\n",
+        "widgets.VBox([tab, acc])"
+      ]
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 4
+}

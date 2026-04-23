@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="jupyter-kit">
+  <title>jupyter-kit — planet with kit moon</title>
+  <!-- Jupiter-inspired disc with a tilted ring + a small "kit" moon riding
+       the orbit. Ring is drawn in three layers so only the right-back tail
+       is kept (it anchors the moon spatially) while the left-back tail is
+       clipped away — keeps the silhouette clean at favicon sizes. -->
+  <defs>
+    <clipPath id="right-only" clipPathUnits="userSpaceOnUse">
+      <rect x="128" y="0" width="128" height="256"/>
+    </clipPath>
+  </defs>
+  <!-- Back half of ring, clipped to the right half of the image -->
+  <g clip-path="url(#right-only)">
+    <g transform="rotate(-20 128 128)">
+      <path d="M 20 128 a 108 26 0 0 1 216 0"
+            fill="none" stroke="#6B7280" stroke-width="10" stroke-linecap="round"/>
+    </g>
+  </g>
+  <!-- Planet (covers the middle portion of the back ring) -->
+  <circle cx="128" cy="128" r="70" fill="#F37626"/>
+  <!-- Front half of ring (over planet) -->
+  <g transform="rotate(-20 128 128)">
+    <path d="M 20 128 a 108 26 0 0 0 216 0"
+          fill="none" stroke="#6B7280" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <!-- Kit moon riding the ring (right). Gray rim on the right half only —
+       the left half would overlap the ring line and look redundant. -->
+  <g transform="rotate(-20 128 128)">
+    <path d="M 224 114 A 14 14 0 0 1 224 142 Z" fill="#6B7280"/>
+    <circle cx="224" cy="128" r="8" fill="#F37626"/>
+  </g>
+</svg>

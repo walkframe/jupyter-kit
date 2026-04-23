@@ -1,0 +1,137 @@
+---
+title: Math plugins
+description: KaTeX and MathJax plugins — KatexPluginOptions, MathjaxPluginOptions, CDN variants.
+---
+
+Four packages, two engines, two delivery models. Pick the one that
+matches your bundle budget and LaTeX complexity:
+
+| Package | Engine | Delivery |
+|---|---|---|
+| `@jupyter-kit/katex` | KaTeX | bundled |
+| `@jupyter-kit/katex-cdn` | KaTeX | fetched from jsdelivr |
+| `@jupyter-kit/mathjax` | MathJax | bundled |
+| `@jupyter-kit/mathjax-cdn` | MathJax | fetched from jsdelivr |
+
+Bundled variants ship the engine with your site — offline-safe, larger.
+CDN variants fetch the engine at runtime — smaller bundle, first render
+pays a network fetch (cached afterwards).
+
+## `@jupyter-kit/katex` (bundled)
+
+```ts
+export type KatexPluginOptions = {
+  remarkMathOptions?: RemarkMathOptions;
+  katexOptions?: KatexOptions;
+};
+```
+
+| Option | Type | Notes |
+|---|---|---|
+| `remarkMathOptions` | `RemarkMathOptions` | Passed to `remark-math`. Default: `{}`. |
+| `katexOptions` | `KatexOptions` | Passed to KaTeX. Useful keys: `throwOnError`, `displayMode`, `macros`. |
+
+```tsx
+import { createKatexPlugin } from '@jupyter-kit/katex';
+import 'katex/dist/katex.min.css';
+
+<Notebook plugins={[createKatexPlugin({ katexOptions: { throwOnError: false } })]} />;
+```
+
+## `@jupyter-kit/katex-cdn`
+
+```ts
+export type KatexCdnPluginOptions = {
+  version?: string;
+  src?: string | string[];
+  timeoutMs?: number;
+  delimiters?: Array<{ left: string; right: string; display: boolean }>;
+  rendererOptions?: Record<string, unknown>;
+};
+```
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `version` | `string` | `'0.16.22'` | KaTeX release to pin. Baked into the default `src` only. |
+| `src` | `string \| string[]` | single jsdelivr URL built from `version` | CDN base URL (directory holding `katex.min.js`, `katex.min.css`, `contrib/auto-render.min.js`) or an ordered fallback list. First candidate that loads wins. |
+| `timeoutMs` | `number` | `10000` | Per-candidate script-load timeout in ms. `0` disables. Guards against hung CDNs that open the connection then stall (browsers never fire `onerror` for those). |
+| `delimiters` | `Array<…>` | `$$ $$` / `\[ \]` / `$ $` / `\( \)` | Forwarded to `renderMathInElement`. |
+| `rendererOptions` | `Record<string, unknown>` | `{}` | Merged into `renderMathInElement` options. |
+
+```tsx
+import { createKatexCdnPlugin } from '@jupyter-kit/katex-cdn';
+
+<Notebook
+  plugins={[createKatexCdnPlugin({
+    // Two CDNs tried in order, 8s timeout each.
+    src: [
+      'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist',
+      'https://unpkg.com/katex@0.16.22/dist',
+    ],
+    timeoutMs: 8000,
+  })]}
+/>;
+```
+
+## `@jupyter-kit/mathjax` (bundled)
+
+```ts
+export type MathjaxPluginOptions = {
+  /** MathJax configuration merged into its default runtime config. */
+  config?: Record<string, unknown>;
+};
+```
+
+Pick MathJax when your notebooks use LaTeX KaTeX can't render — custom
+macros, `\begin{align}`, `\newcommand`, `\require`, etc. MathJax is
+heavier (~700 KB gz bundled, ~1.5 MB fetched).
+
+```tsx
+import { createMathjaxPlugin } from '@jupyter-kit/mathjax';
+
+<Notebook plugins={[createMathjaxPlugin({
+  config: {
+    tex: { macros: { RR: '{\\bf R}' } },
+  },
+})]} />;
+```
+
+## `@jupyter-kit/mathjax-cdn`
+
+```ts
+export type MathjaxCdnPluginOptions = {
+  src?: string | string[];
+  timeoutMs?: number;
+  config?: Record<string, unknown>;
+  forceReload?: boolean;
+};
+```
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `src` | `string \| string[]` | `https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js` | MathJax script URL, or an ordered fallback list. The plugin tries each in turn. |
+| `timeoutMs` | `number` | `10000` | Per-candidate script-load timeout in ms. `0` disables. |
+| `config` | `Record<string, unknown>` | inline/display `$…$` + `$$…$$` | Assigned to `window.MathJax` before the script loads. Replaces the default entirely — if you only want to add macros, merge with the default yourself. |
+| `forceReload` | `boolean` | `false` | Re-inject the MathJax script even if an earlier load left one in the DOM. |
+
+```tsx
+import { createMathjaxCdnPlugin } from '@jupyter-kit/mathjax-cdn';
+
+<Notebook
+  plugins={[createMathjaxCdnPlugin({
+    src: [
+      'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js',
+    ],
+    timeoutMs: 8000,
+  })]}
+/>;
+```
+
+## Picking between KaTeX and MathJax
+
+- **Inline-only math** (`$x^2$`, `$\frac{a}{b}$`) — KaTeX, CDN variant.
+- **Block math with `align`, `cases`, `eqnarray`** — KaTeX handles most;
+  the bundled `@jupyter-kit/katex` remaps `eqnarray → aligned` for you.
+- **Custom TeX packages, `\require`, physics.sty / mhchem** — MathJax.
+  Pick `-cdn` unless your app must be offline-usable.

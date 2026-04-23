@@ -1,0 +1,115 @@
+{
+  "name": "@jupyter-kit/core",
+  "version": "3.0.0-rc.7",
+  "description": "Framework-agnostic Jupyter notebook renderer with built-in syntax highlighting (Lezer) and a plugin runtime.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "import": "./dist/jsx-runtime.js",
+      "default": "./dist/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/jsx-dev-runtime.d.ts",
+      "import": "./dist/jsx-dev-runtime.js",
+      "default": "./dist/jsx-dev-runtime.js"
+    },
+    "./langs/python": {
+      "types": "./dist/langs/python.d.ts",
+      "import": "./dist/langs/python.js"
+    },
+    "./langs/javascript": {
+      "types": "./dist/langs/javascript.d.ts",
+      "import": "./dist/langs/javascript.js"
+    },
+    "./langs/r": {
+      "types": "./dist/langs/r.d.ts",
+      "import": "./dist/langs/r.js"
+    },
+    "./langs/julia": {
+      "types": "./dist/langs/julia.d.ts",
+      "import": "./dist/langs/julia.js"
+    },
+    "./langs/haskell": {
+      "types": "./dist/langs/haskell.d.ts",
+      "import": "./dist/langs/haskell.js"
+    },
+    "./langs/ruby": {
+      "types": "./dist/langs/ruby.d.ts",
+      "import": "./dist/langs/ruby.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@jupyter-kit/comm": "workspace:*",
+    "@lezer/common": "^1.2.1",
+    "@lezer/highlight": "^1.2.1",
+    "@lezer/python": "^1.1.14",
+    "anser": "^2.3.0",
+    "dompurify": "^3.2.7",
+    "rehype-raw": "^7.0.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/legacy-modes": "^6.4.0",
+    "@codemirror/state": "^6.4.0",
+    "@lezer/javascript": "^1.4.0"
+  },
+  "peerDependenciesMeta": {
+    "@codemirror/language": {
+      "optional": true
+    },
+    "@codemirror/legacy-modes": {
+      "optional": true
+    },
+    "@codemirror/state": {
+      "optional": true
+    },
+    "@lezer/javascript": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/unist": "^3.0.2",
+    "jsdom": "^26.0.0",
+    "vitest": "^2.1.0"
+  },
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer"
+  ],
+  "author": "righ",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walkframe/jupyter-kit.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://jupyter-kit.walkframe.com"
+}

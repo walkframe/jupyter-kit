@@ -1,0 +1,124 @@
+---
+// Decision diagram for picking the right @jupyter-kit packages.
+// Pure inline SVG so no runtime JS / extra deps.
+//
+// The "add-ons" row is purely additive — pick ANY combination, not one
+// of them. Make that visually obvious by grouping them inside a labelled
+// container rather than as branches of a decision.
+---
+
+<div class="install-flow">
+  <svg viewBox="0 0 860 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Install decision diagram">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+      </marker>
+      <style>
+        .box { fill: var(--sl-color-gray-6); stroke: var(--sl-color-gray-4); stroke-width: 1.5; rx: 8; }
+        .box.start { fill: var(--sl-color-accent-low); stroke: var(--sl-color-accent); }
+        .box.opt { fill: var(--sl-color-gray-5); stroke-dasharray: 4 3; }
+        .group { fill: none; stroke: var(--sl-color-gray-4); stroke-dasharray: 2 3; rx: 10; }
+        text { fill: var(--sl-color-white); font-family: var(--sl-font-system); font-size: 13px; }
+        text.small { font-size: 11px; fill: var(--sl-color-gray-2); }
+        text.hdr { font-weight: 600; }
+        text.group-label { font-size: 12px; font-weight: 600; fill: var(--sl-color-gray-2); letter-spacing: 0.5px; text-transform: uppercase; }
+        text.pkg { font-family: var(--sl-font-system-mono); font-size: 12px; fill: var(--sl-color-accent-high); }
+        line { stroke: var(--sl-color-gray-3); stroke-width: 1.5; }
+      </style>
+    </defs>
+
+    <!-- 1. Start -->
+    <rect class="box start" x="330" y="10" width="200" height="54" />
+    <text x="430" y="32" text-anchor="middle" class="hdr">Start</text>
+    <text x="430" y="50" text-anchor="middle" class="small">Pick ONE framework</text>
+
+    <line x1="430" y1="64" x2="120" y2="100" marker-end="url(#arrow)" />
+    <line x1="430" y1="64" x2="310" y2="100" marker-end="url(#arrow)" />
+    <line x1="430" y1="64" x2="550" y2="100" marker-end="url(#arrow)" />
+    <line x1="430" y1="64" x2="760" y2="100" marker-end="url(#arrow)" />
+
+    <!-- 2. Framework row (pick one, exclusive) -->
+    <rect class="box" x="40" y="100" width="160" height="48" />
+    <text x="120" y="122" text-anchor="middle">React</text>
+    <text x="120" y="138" text-anchor="middle" class="pkg">@jupyter-kit/react</text>
+
+    <rect class="box" x="230" y="100" width="160" height="48" />
+    <text x="310" y="122" text-anchor="middle">Vue 3</text>
+    <text x="310" y="138" text-anchor="middle" class="pkg">@jupyter-kit/vue</text>
+
+    <rect class="box" x="470" y="100" width="160" height="48" />
+    <text x="550" y="122" text-anchor="middle">Web Component</text>
+    <text x="550" y="138" text-anchor="middle" class="pkg">@jupyter-kit/wc</text>
+
+    <rect class="box" x="680" y="100" width="160" height="48" />
+    <text x="760" y="122" text-anchor="middle">Vanilla / custom</text>
+    <text x="760" y="138" text-anchor="middle" class="pkg">@jupyter-kit/core</text>
+
+    <line x1="120" y1="148" x2="430" y2="200" />
+    <line x1="310" y1="148" x2="430" y2="200" />
+    <line x1="550" y1="148" x2="430" y2="200" />
+    <line x1="760" y1="148" x2="430" y2="200" />
+
+    <!-- 3. Theme (required) -->
+    <rect class="box start" x="320" y="200" width="220" height="54" />
+    <text x="430" y="222" text-anchor="middle" class="hdr">+ theme (required)</text>
+    <text x="430" y="240" text-anchor="middle" class="pkg">@jupyter-kit/theme-default (or any other)</text>
+
+    <!-- Single downward arrow into the add-on group -->
+    <line x1="430" y1="254" x2="430" y2="282" marker-end="url(#arrow)" />
+
+    <!-- 4. Optional add-ons — group label + dashed container = "pick any combination" -->
+    <rect class="group" x="30" y="290" width="800" height="200" />
+    <text x="430" y="310" text-anchor="middle" class="group-label">Optional — add any combination</text>
+
+    <rect class="box opt" x="50" y="330" width="170" height="130" />
+    <text x="135" y="354" text-anchor="middle" class="hdr">Math</text>
+    <text x="135" y="378" text-anchor="middle" class="pkg">katex-cdn</text>
+    <text x="135" y="396" text-anchor="middle" class="small">or mathjax-cdn</text>
+    <text x="135" y="420" text-anchor="middle" class="small">(bundled variants also</text>
+    <text x="135" y="434" text-anchor="middle" class="small">available)</text>
+
+    <rect class="box opt" x="240" y="330" width="170" height="130" />
+    <text x="325" y="354" text-anchor="middle" class="hdr">Run Python</text>
+    <text x="325" y="378" text-anchor="middle" class="pkg">executor-pyodide</text>
+    <text x="325" y="402" text-anchor="middle" class="small">editor + CodeMirror</text>
+    <text x="325" y="418" text-anchor="middle" class="small">bundled in.</text>
+    <text x="325" y="438" text-anchor="middle" class="small">Pyodide (~10MB) via CDN.</text>
+
+    <rect class="box opt" x="430" y="330" width="170" height="130" />
+    <text x="515" y="354" text-anchor="middle" class="hdr">Run R</text>
+    <text x="515" y="378" text-anchor="middle" class="pkg">executor-webr</text>
+    <text x="515" y="402" text-anchor="middle" class="small">editor + CodeMirror</text>
+    <text x="515" y="418" text-anchor="middle" class="small">bundled in.</text>
+    <text x="515" y="438" text-anchor="middle" class="small">GPL-2.0+</text>
+
+    <rect class="box opt" x="620" y="330" width="170" height="130" />
+    <text x="705" y="354" text-anchor="middle" class="hdr">ipywidgets</text>
+    <text x="705" y="378" text-anchor="middle" class="pkg">widgets</text>
+    <text x="705" y="402" text-anchor="middle" class="small">static hydration alone;</text>
+    <text x="705" y="418" text-anchor="middle" class="small">pair with pyodide</text>
+    <text x="705" y="434" text-anchor="middle" class="small">for interactive.</text>
+
+    <!-- Footer note -->
+    <text x="430" y="510" text-anchor="middle" class="small">Each box is one `pnpm add …` — all add-ons are additive, not exclusive.</text>
+    <text x="430" y="526" text-anchor="middle" class="small">See the Quick pick table below for copy-pastable commands.</text>
+  </svg>
+</div>
+
+<style>
+  .install-flow {
+    margin: 1.5rem 0;
+    padding: 0.75rem;
+    background: var(--sl-color-gray-7, rgba(127, 127, 127, 0.06));
+    border: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .install-flow svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+</style>

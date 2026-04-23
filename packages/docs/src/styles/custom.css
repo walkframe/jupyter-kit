@@ -1,0 +1,40 @@
+:root {
+  --sl-font: 'Nunito Sans', system-ui, sans-serif;
+}
+
+/* Let embedded notebook renderers fill their content column. */
+.sl-container .jknb-root {
+  margin: 1rem 0;
+}
+
+.privacy-callout {
+  border: 1px solid var(--sl-color-green);
+  background: color-mix(in srgb, var(--sl-color-green) 10%, transparent);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.privacy-callout strong {
+  color: var(--sl-color-green);
+}
+
+/* Horizontal-scroll wrapper for wide tables (e.g. the feature matrix on
+   install-matrix.mdx). Tables get flattened into 1-column stacks on narrow
+   screens otherwise, which defeats the "at a glance" comparison. */
+.scroll-table {
+  overflow-x: auto;
+  max-width: 100%;
+  margin: 1rem 0;
+  border: 1px solid var(--sl-color-hairline, rgba(127, 127, 127, 0.25));
+  border-radius: 6px;
+}
+.scroll-table table {
+  margin: 0;
+  white-space: nowrap;
+}
+.scroll-table th,
+.scroll-table td {
+  padding: 0.5rem 0.75rem;
+}

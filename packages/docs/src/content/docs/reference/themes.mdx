@@ -1,0 +1,65 @@
+---
+title: Themes
+description: Chrome + syntax theme packages — subpaths and imports.
+---
+
+Themes ship as one published package per chrome, plus one "kitchen sink"
+aggregator. Every chrome package also bundles the 8 syntax themes under
+`./syntax/*.css`.
+
+## Chrome variants
+
+```ts
+import '@jupyter-kit/theme-<name>/style.css';
+```
+
+`<name>` is one of:
+
+| Package | Feel |
+|---|---|
+| `@jupyter-kit/theme-default` | Classic Jupyter light |
+| `@jupyter-kit/theme-dark` | Jupyter dark |
+| `@jupyter-kit/theme-chesterish` | Blue-tinted dark |
+| `@jupyter-kit/theme-darkbronco` | Dark, warm accents |
+| `@jupyter-kit/theme-dorkula` | Dracula-inspired |
+| `@jupyter-kit/theme-grade3` | Soft pastel light |
+| `@jupyter-kit/theme-gruvboxd` | Gruvbox dark |
+| `@jupyter-kit/theme-gruvboxl` | Gruvbox light |
+| `@jupyter-kit/theme-monokai` | Monokai dark |
+| `@jupyter-kit/theme-oceans16` | Ocean-16 dark |
+| `@jupyter-kit/theme-onedork` | One Dark Jupyter variant |
+| `@jupyter-kit/theme-solarizedd` | Solarized Dark |
+| `@jupyter-kit/theme-solarizedl` | Solarized Light |
+
+## Syntax themes
+
+Under any chrome package at `./syntax/<name>.css`:
+
+- `dracula.css`
+- `github-light.css`
+- `monokai.css`
+- `one-dark.css`
+- `one-light.css`
+- `solarized-dark.css`
+- `solarized-light.css`
+- `vsc-dark-plus.css`
+
+```ts
+import '@jupyter-kit/theme-default/default.css';
+import '@jupyter-kit/theme-default/syntax/one-dark.css';
+```
+
+## Every theme, one package
+
+For apps that let users pick a theme at runtime, install
+`@jupyter-kit/theme-all` — every chrome under `./chrome/<name>.css` and
+every syntax under `./syntax/<name>.css`:
+
+```ts
+// Load / swap chromes via <style> swap or `?inline` in Vite:
+import defaultCss from '@jupyter-kit/theme-all/chrome/default.css?inline';
+import darkCss from '@jupyter-kit/theme-all/chrome/dark.css?inline';
+// …
+```
+
+See the [theme switcher demo](/demos/themes/) for a runtime-swap pattern.

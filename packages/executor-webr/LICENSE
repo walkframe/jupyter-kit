@@ -1,0 +1,13 @@
+@jupyter-kit/executor-webr is licensed under the GNU General Public License,
+version 2.0 or any later version, because it links against WebR (`webr` on
+npm), which embeds the R interpreter — itself licensed under GPL-2.0-or-later.
+
+A copy of GPL-2.0 is available at:
+  https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
+
+GPL-3.0:
+  https://www.gnu.org/licenses/gpl-3.0.txt
+
+Other packages in this monorepo (core, react, theme, syntax, mathjax,
+mathjax-cdn, katex, katex-cdn, editor-codemirror, executor-pyodide) remain
+under the Apache License 2.0 — they neither bundle nor link against R.

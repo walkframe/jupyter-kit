@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/theme",
-  "version": "3.0.0-rc.3",
+  "version": "3.0.0-rc.4",
   "private": true,
   "description": "Source-of-truth for @jupyter-kit themes. Local workspace consumers import via subpaths; published packages (@jupyter-kit/theme-<chrome>, @jupyter-kit/theme-all) are generated under dist-publish/ by `pnpm run build`.",
   "type": "module",

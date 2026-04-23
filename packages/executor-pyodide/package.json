@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/executor-pyodide",
-  "version": "3.0.0-rc.3",
+  "version": "3.0.0-rc.4",
   "description": "In-browser Python executor for @jupyter-kit. Loads Pyodide from a CDN (the runtime is ~10MB WASM, so bundling isn't practical).",
   "type": "module",
   "main": "./dist/index.js",

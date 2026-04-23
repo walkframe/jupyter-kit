@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/wc",
-  "version": "3.0.0-rc.3",
+  "version": "3.0.0-rc.4",
   "description": "Web Component wrapper for @jupyter-kit/core. Defines <jk-notebook> as a CustomElement, usable from any framework or plain HTML.",
   "type": "module",
   "main": "./dist/index.js",

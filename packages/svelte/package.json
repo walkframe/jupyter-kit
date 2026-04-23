@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/svelte",
-  "version": "3.0.0-rc.3",
+  "version": "3.0.0-rc.4",
   "description": "Svelte 5 wrapper around @jupyter-kit/core.",
   "type": "module",
   "main": "./dist/index.js",

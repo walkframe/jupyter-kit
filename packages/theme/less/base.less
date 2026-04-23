@@ -96,13 +96,17 @@
     max-width: 100%;
     height: auto;
   }
-  // Only override max-width — leave `height` to KaTeX's own
-  // `.katex svg { height: inherit }` rule. Touching height with `revert`
-  // collapses it to the UA default (`auto`), which then re-derives from
-  // viewBox aspect ratio and pushes height to ~0px (KaTeX's radical viewBox
-  // is 400000:1080 ≈ 370:1).
+  // KaTeX's radical SVG has `width="400em" height="1.08em"` and a viewBox
+  // with aspect ratio ~370:1. Our `.jknb-root svg { max-width:100%; height:auto }`
+  // would clamp width to the parent and let height auto-derive from the
+  // viewBox, collapsing to ~0px and hiding the √ symbol. Opt the .katex
+  // subtree out of both, mirroring KaTeX's own `.katex svg { height:inherit }`
+  // rule at higher specificity so it wins regardless of stylesheet load order
+  // (matters when the host injects the theme via useEffect after the page's
+  // initial CSS bundle, e.g. dynamic `<style>` injection in Vite SPAs).
   .katex img, .katex svg {
     max-width: none;
+    height: inherit;
   }
   // CodeMirror 6: `.cm-content` grows to fit the longest line and won't
   // shrink unless the ancestor flex chain explicitly allows it.

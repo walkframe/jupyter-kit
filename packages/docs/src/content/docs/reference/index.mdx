@@ -1,39 +1,34 @@
 ---
 title: Reference
-description: API reference for every @jupyter-kit package — options, types, and usage examples.
+description: API reference index — options, types, and usage examples for every @jupyter-kit package.
 ---
 
-API reference for every `@jupyter-kit/*` package. Each page documents the
-options exposed by that package, how they plug into the renderer, and any
-non-obvious behaviour. The left sidebar lists them by layer:
+API reference for every published `@jupyter-kit/*` package. Pick one
+from the sidebar (or the table below); each page documents the package's
+options, types, usage example, and any non-obvious behaviour.
 
-- **Core & framework wrappers** — the renderer engine and its official
-  React / Vue / Svelte / Web Component bindings. Start here.
-- **Plugins** — opt-in extensions (editor, math, widgets). Each returns a
-  `Plugin` object that you pass to `<Notebook plugins={[…]} />`.
-- **Executors** — runtimes for edit-and-run. `executor-pyodide` (Python)
-  and `executor-webr` (R) run in the browser; `executor-jupyter` talks to
-  a remote Jupyter Server. All three have distinct threat models —
-  see [security caveats](#security-caveats-for-executors).
-- **Themes** — chrome + syntax CSS bundles. No options; purely stylesheet
-  imports.
+For the **why** — how the packages fit together, the data flow, and the
+design rationale — see the
+[architecture overview](/development/architecture/) instead.
 
-## Security caveats for executors
+## Browse by category
+
+| Category | Packages |
+|---|---|
+| **Core** | [@jupyter-kit/core](/reference/core/) |
+| **Framework wrappers** (pick one) | [/react](/reference/react/) · [/vue](/reference/vue/) · [/svelte](/reference/svelte/) · [/wc](/reference/wc/) |
+| **Plugins** (zero or more) | [/editor-codemirror](/reference/editor-codemirror/) · [math: katex / katex-cdn / mathjax / mathjax-cdn](/reference/math-plugins/) · [/widgets](/reference/widgets/) |
+| **Executors** (optional, one) | [/executor-pyodide](/reference/executor-pyodide/) · [/executor-webr](/reference/executor-webr/) · [/executor-jupyter](/reference/executor-jupyter/) |
+| **Comm protocol** (types only) | [/comm](/reference/comm/) |
+| **Themes** | [theme catalog](/reference/themes/) |
+
+New to the project? The [getting-started page](/getting-started/) walks
+through the minimum install for a typical setup; the
+[install wizard](/install-wizard/) lets you pick options interactively.
+
+## Before you ship
 
 Anything that executes arbitrary source code changes the threat model of
-your site. The location of execution matters — in-browser executors put
-the visitor's device on the hook, remote executors put your server on
-the hook. Before shipping any of these on a public page, read the
-relevant reference:
-
-- [Pyodide executor — security](/reference/executor-pyodide/#security) —
-  arbitrary code in the visitor's browser.
-- [WebR executor — security](/reference/executor-webr/#security) —
-  arbitrary code in the visitor's browser.
-- [Jupyter executor — security](/reference/executor-jupyter/#security) —
-  arbitrary code on the Jupyter Server (token = full shell access).
-
-The renderer itself (core + react / vue / wc) sanitises markdown and
-HTML/SVG outputs via DOMPurify + `rehype-sanitize` — see the
-[XSS security test](https://github.com/walkframe/jupyter-kit/blob/master/packages/e2e/tests/xss.spec.ts)
-for the payloads it's verified against.
+your site. The [security model](/reference/security/) page summarises
+the default protections, what they don't cover, and what each executor
+plugin requires you to think about. Read it before going to production.

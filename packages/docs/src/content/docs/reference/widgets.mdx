@@ -105,11 +105,18 @@ webpack handles both natively — no extra config required. Just install
 
 ## Bundle cost
 
-The plugin pulls in `@jupyter-widgets/{base,base-manager,controls,html-manager,output}`
-(~600 KB – 1 MB minified). It's installed as a separate package on
-purpose: notebooks without widgets shouldn't pay this cost. The heavy
-dependencies are dynamic-imported the first time `setup()` runs, so the
-initial render path stays light.
+The plugin pulls in a fairly large dependency graph:
+
+| Package | Minified | Notes |
+|---|---|---|
+| `@jupyter-widgets/{base,base-manager,controls,html-manager,output}` | ~600 KB – 1 MB | The widget runtime itself |
+| `jquery` | ~85 KB | Peer of `@jupyter-widgets/controls` slider widgets |
+| `jquery-ui` | ~250 KB | Transitive — provides `$.ui.{mouse,slider,draggable,...}` |
+
+**Total: ~1.0 – 1.4 MB minified.** Everything is dynamic-imported the
+first time the plugin's `setup()` runs, so the initial render path stays
+light — notebooks without widgets don't pay any of this cost. The
+plugin is a separate package on purpose for the same reason.
 
 ## Limitations
 

@@ -1,0 +1,155 @@
+---
+title: Security model
+description: What @jupyter-kit protects against by default, what it deliberately doesn't, and the integrator responsibilities for shipping it on a public page.
+---
+
+import Mermaid from '../../../components/Mermaid.tsx';
+
+`@jupyter-kit` renders untrusted notebook content in the browser. Each
+layer has a different threat surface; this page summarises what's
+defended where, what isn't, and what's on you as the integrator. Each
+executor's reference page has the per-runtime detail.
+
+## At a glance
+
+<Mermaid client:only="react" code={`
+flowchart LR
+  classDef safe fill:#dcfce7,stroke:#10b981,color:#064e3b
+  classDef caution fill:#fef3c7,stroke:#f59e0b,color:#78350f
+  classDef danger fill:#fee2e2,stroke:#ef4444,color:#7f1d1d
+
+  Markdown[Markdown / raw HTML / SVG outputs<br/>sanitised by DOMPurify]:::safe
+  CodeView[Code cells, displayed only<br/>no execution]:::safe
+  Pyodide[executor-pyodide<br/>Python on visitor device]:::caution
+  WebR[executor-webr<br/>R on visitor device]:::caution
+  Jupyter[executor-jupyter<br/>Python/R/etc on YOUR server]:::danger
+
+  Markdown -. opt-in plugin .-> Pyodide
+  CodeView -. opt-in plugin .-> Pyodide
+  CodeView -. opt-in plugin .-> WebR
+  CodeView -. opt-in plugin .-> Jupyter
+`} />
+
+| Surface | Default | Who owns risk |
+|---|---|---|
+| Rendered markdown / HTML / SVG | Sanitised | Framework |
+| Code cells (display) | Inert text | Framework |
+| In-browser code execution (`pyodide`, `webr`) | Off by default — opt-in by installing | Visitor's device, integrator must consider what site cookies / origin access cell code can reach |
+| Remote code execution (`jupyter`) | Off by default — opt-in | Your server (token = shell access) |
+
+## What the renderer protects (by default)
+
+- **`<script>` / `javascript:` / `on*` handlers in markdown / output HTML are stripped.**
+  The default `htmlFilter` is DOMPurify-based ([source](https://github.com/walkframe/jupyter-kit/blob/master/packages/core/src/filter.ts)).
+- **SVG `<use>` is whitelisted** — needed for KaTeX / matplotlib output but
+  configured carefully (see `defaultHtmlFilter`).
+- **DataFrame / pandas HTML output is processed through the same filter** —
+  raw HTML from the kernel is not trusted.
+- **CodeMirror editors do not auto-execute on paste** — Shift+Enter (or
+  the toolbar Run button) is the explicit gesture.
+
+This baseline applies as soon as you mount `<Notebook>`. No executor
+plugins are required for it.
+
+The default filter is verified against an
+[XSS regression suite](https://github.com/walkframe/jupyter-kit/blob/master/packages/e2e/tests/xss.spec.ts)
+covering `<script>`, `javascript:` URIs, SVG `onload`, MathJax injection,
+and a few others. PRs adding new payloads are welcome.
+
+## Customising the sanitiser
+
+Pass a custom `htmlFilter` to override the default. The filter signature
+is `(html: string) => string`; return the cleaned HTML. Examples:
+
+```tsx
+import DOMPurify from 'dompurify';
+
+// Stricter: drop all images
+<Notebook
+  htmlFilter={(html) => DOMPurify.sanitize(html, { FORBID_TAGS: ['img'] })}
+  ipynb={nb}
+/>;
+
+// Looser: allow style attributes (default forbids them)
+<Notebook
+  htmlFilter={(html) => DOMPurify.sanitize(html, { ALLOW_DATA_ATTR: true })}
+  ipynb={nb}
+/>;
+```
+
+Replacing the filter with a no-op (`(html) => html`) disables sanitisation
+entirely. Don't do this for untrusted notebooks.
+
+## What the renderer deliberately does NOT protect
+
+The renderer trusts that:
+
+- Your `RendererOptions` are not user-controlled (no one is letting
+  visitors pass their own `htmlFilter`).
+- Your installed plugins are themselves trusted code (they get full
+  access to cell DOM via `renderOutput`).
+- The notebook JSON itself is not malicious in non-content fields (we
+  don't validate `nbformat` / `metadata` shape exhaustively).
+
+If any of these assumptions break for your deployment, additional
+defence-in-depth is on the integrator.
+
+## In-browser executors (`pyodide`, `webr`)
+
+If you install `@jupyter-kit/executor-pyodide` or `@jupyter-kit/executor-webr`
+and pass it to `<Notebook executor={…}>`, **untrusted notebook cells can
+run arbitrary code on the visitor's device**. Consequences:
+
+- The code can `fetch` anywhere the browser allows. Same-origin requests
+  carry the visitor's cookies.
+- It can read / write `localStorage` and `sessionStorage` on your origin.
+- It can post messages to other windows / iframes.
+- For pyodide / webr specifically: filesystem access is sandboxed
+  (browser only) — but that's the only meaningful sandbox.
+
+Mitigations to consider:
+
+- Add a click-to-run gate. Don't auto-run cells from untrusted sources.
+- Serve the renderer page from an isolated origin with no first-party
+  cookies you care about.
+- Configure a strict Content-Security-Policy on the page hosting the
+  renderer. `connect-src` and `script-src` policies still apply to
+  pyodide / webr's own `fetch` and `Worker` activity.
+- Treat untrusted notebooks the way you'd treat untrusted user-supplied
+  JS — because that's what they are once an executor is installed.
+
+See [executor-pyodide security](/reference/executor-pyodide/#security)
+and [executor-webr security](/reference/executor-webr/#security) for
+runtime-specific notes.
+
+## Remote executor (`jupyter`)
+
+`@jupyter-kit/executor-jupyter` connects to a **Jupyter Server you
+control**. The threat model flips:
+
+- The token is **not** privileged — it grants whatever the server-side
+  user account can do. A leaked token = full shell access from the
+  internet.
+- Don't ship a token literal in client-side code that's served to
+  untrusted users. Use per-session tokens issued by your backend, or
+  proxy through JupyterHub's authentication.
+- The server itself has the same code-execution surface as any local
+  Jupyter Server: filesystem, network, subprocess. Containerise.
+
+Detail: [executor-jupyter security](/reference/executor-jupyter/#security).
+
+## Threat model summary
+
+| You install… | What runs where | Required hardening |
+|---|---|---|
+| Just core + a wrapper | Nothing executes | Default sanitiser; nothing extra |
+| `+` math / widgets plugins | Nothing executes | Same as above (these are render-only) |
+| `+` `executor-pyodide` or `-webr` | Untrusted code on the visitor's device | Click-to-run gate, CSP, isolated origin |
+| `+` `executor-jupyter` | Untrusted code on **your** server | Token hygiene, per-session auth, containerised kernel |
+
+## Reporting a vulnerability
+
+If you find a vulnerability — particularly one that defeats the default
+sanitiser — please use [GitHub's private advisory flow](https://github.com/walkframe/jupyter-kit/security/advisories/new).
+Don't open a public issue. The maintainer responds on a best-effort
+basis (no SLA — this is a small open-source project).

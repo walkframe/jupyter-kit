@@ -1,0 +1,112 @@
+---
+title: Contributing
+description: How to set up @jupyter-kit locally, run tests, and ship a change.
+---
+
+`@jupyter-kit` lives in a single pnpm workspace at
+[`walkframe/jupyter-kit`](https://github.com/walkframe/jupyter-kit). All
+21 packages, the storybook, the docs site, and the e2e suite share one
+`node_modules` and one lockfile.
+
+## Prerequisites
+
+| Tool | Version | Notes |
+|---|---|---|
+| Node.js | **24.1.0** | Pin via `.tool-versions` (asdf) or `.node-version` (nvm). Older versions miss native fetch / WebSocket APIs the e2e + executor-jupyter rely on. |
+| pnpm | **10.33+** | Enabled via `corepack`: `corepack enable && corepack prepare pnpm@10.33.0 --activate` |
+
+## Clone + install
+
+```sh
+git clone --recurse-submodules git@github.com:walkframe/jupyter-kit.git
+cd jupyter-kit
+pnpm install
+```
+
+`--recurse-submodules` matters: `packages/theme/less/jupyter-themes` is a
+submodule pulling the upstream
+[dunovank/jupyter-themes](https://github.com/dunovank/jupyter-themes)
+LESS sources. Without it the theme build fails.
+
+## Common commands
+
+All run from the repo root.
+
+| Command | What it does |
+|---|---|
+| `pnpm build` | Build every workspace package (`packages/*`) into its `dist/`. The theme package additionally generates `dist-publish/theme-*` per-chrome bundles. |
+| `pnpm typecheck` | Run `tsc --noEmit` across every package + `astro check` on docs. |
+| `pnpm test` | Run vitest suites in every package except `e2e`. |
+| `pnpm test:e2e` | Playwright-based browser tests in `packages/e2e`. Requires browsers installed (`pnpm --filter @jupyter-kit/e2e exec playwright install`). |
+| `pnpm storybook` | Boot Storybook on `localhost:6006` for live component / executor experimentation. |
+| `pnpm --filter @jupyter-kit/docs dev` | Astro dev server for the docs site (this site). |
+| `pnpm --filter <pkg> exec tsup --watch` | Live-rebuild a specific package while you edit. Useful when a downstream demo / example is consuming it. |
+| `pnpm prettier` | Format every TS/TSX/CSS/LESS file under `packages/`. |
+| `pnpm eslint` | Lint TS/TSX. CI gates on this. |
+
+## Workspace layout
+
+```
+packages/
+├── core/                 framework-agnostic renderer + JSX runtime
+├── react/                <Notebook> for React
+├── vue/                  <Notebook> for Vue 3
+├── svelte/               <Notebook> for Svelte 5
+├── wc/                   <jk-notebook> custom element
+├── editor-codemirror/    inline editing + Shift+Enter
+├── executor-pyodide/     in-browser Python (CPython → WASM)
+├── executor-webr/        in-browser R (WebR)
+├── executor-jupyter/     remote Jupyter Server / kernel WebSocket
+├── katex/    katex-cdn/  math (bundled / CDN-loaded)
+├── mathjax/  mathjax-cdn/
+├── widgets/              ipywidgets (jupyter-widgets/html-manager)
+├── comm/                 Comm protocol types (zero runtime bytes)
+├── theme/                LESS source + build.mjs (generates per-chrome
+│                         publishable packages under dist-publish/)
+├── fixtures/             shared .ipynb fixtures (workspace-internal)
+├── docs/                 Astro + Starlight site (this site)
+├── storybook/            Storybook with executor / theme / plugin stories
+└── e2e/                  Playwright browser tests
+```
+
+`docs`, `storybook`, `fixtures`, `e2e`, and the source `theme` package
+are private (`"private": true`) — they're workspace-internal and never
+publish to npm. Everything else publishes together; see
+[Versioning](/development/versioning/).
+
+## Making a change
+
+1. **Branch from `master`** with a short kebab name:
+   `fix/widgets-jquery-shim`, `feat/svelte-component`, etc.
+2. **Edit the source package(s)**. Most packages build with tsup; some
+   (`theme`, `docs`, `storybook`) have their own build. `pnpm
+   --filter <pkg> build` triggers just that package + its dependencies.
+3. **Add / update tests.** Vitest specs live next to the source as
+   `*.test.ts` (or `*.test.tsx`). Browser-level changes go in `packages/e2e`
+   as Playwright specs.
+4. **Run the full local check**: `pnpm build && pnpm typecheck && pnpm test`.
+5. **Try it in storybook or docs.** If your change affects rendering,
+   `pnpm storybook` is the fastest feedback loop.
+6. **Open a PR.** CI runs the same checks and gates merging. The PR
+   template asks you to note any user-visible changes — those drive the
+   release notes for the next version bump.
+
+## Releasing
+
+Triggered manually by a maintainer once a batch of PRs is queued:
+
+```sh
+pnpm bump 3.0.0-rc.10   # bumps every package + dist-publish/theme-*
+git commit -am 'release 3.0.0-rc.10'
+pnpm tag:push           # creates and pushes v3.0.0-rc.10
+```
+
+The release workflow takes over from there. See
+[Versioning](/development/versioning/) for the full picture.
+
+## Where to ask
+
+- **Bugs / requests** → [GitHub issues](https://github.com/walkframe/jupyter-kit/issues)
+- **Behaviour question / "is this on purpose?"** → file an issue with
+  the repro; we'd rather document the answer than have it stay tribal.
+- **Security** → please don't open a public issue. Use [GitHub's private advisory flow](https://github.com/walkframe/jupyter-kit/security/advisories/new) instead.

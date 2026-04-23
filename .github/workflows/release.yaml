@@ -6,7 +6,11 @@ on:
       - master
       - fix/*
     tags:
-      - "v*/*"
+      # Single workspace-wide release tag, e.g. `v3.0.0` or `v3.0.0-rc.9`.
+      # release-all.sh publishes every package at its current package.json
+      # version (which `pnpm bump` keeps unified), so per-package tags would
+      # be redundant.
+      - "v*"
 
 permissions:
   id-token: write # Required for npm trusted publishing (OIDC) / --provenance

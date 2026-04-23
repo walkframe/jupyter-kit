@@ -1,0 +1,117 @@
+---
+title: Versioning policy
+description: How @jupyter-kit packages are versioned and released — single workspace-wide version, semver, and rc cadence.
+---
+
+`@jupyter-kit` ships every package on the **same version** and releases
+them together as a single workspace-wide bump. There is no per-package
+semver lifecycle.
+
+## Single workspace-wide version
+
+Every published package — `@jupyter-kit/core`, `react`, `vue`, `svelte`,
+`wc`, every `executor-*`, every `theme-*`, etc. — carries the **identical
+version number** at all times. A release tag like `v3.0.0-rc.9` means
+**all** of:
+
+```
+@jupyter-kit/core            @ 3.0.0-rc.9
+@jupyter-kit/react           @ 3.0.0-rc.9
+@jupyter-kit/widgets         @ 3.0.0-rc.9
+@jupyter-kit/executor-pyodide @ 3.0.0-rc.9
+@jupyter-kit/theme-default   @ 3.0.0-rc.9
+… and all 28 packages         @ 3.0.0-rc.9
+```
+
+are published in the same workflow run.
+
+### Why
+
+- **Compatibility is guaranteed.** Cross-package peer-dep mismatches
+  (`react` thinks `core` is `^3.0.0-rc.7` but the user installed
+  `^3.0.0-rc.9`) simply can't happen — they're always the same number.
+- **Mental overhead is zero for users.** Pin one version, get a coherent
+  release. No need to track "which `react` version goes with which
+  `core`".
+- **Tagging is simpler.** One git tag (`v3.0.0-rc.9`) instead of 14
+  per-package tags.
+
+### What it costs
+
+- A doc-only typo fix in `@jupyter-kit/widgets` still bumps every other
+  package's version. Some users find this noisy.
+- We don't follow strict per-package semver: a "minor" version bump on
+  `core` will appear on `theme-monokai` even though the theme didn't
+  change. Treat the workspace-wide version as a *release name*, not a
+  per-package semver claim.
+
+## Semver intent
+
+Inside the workspace-wide version, we still try to honour semver
+**collectively**:
+
+| Bump | Trigger |
+|---|---|
+| **Major** (`3.x.x` → `4.x.x`) | Any breaking change in any package's public API |
+| **Minor** (`3.0.x` → `3.1.x`) | Any net-new feature in any package |
+| **Patch** (`3.0.0` → `3.0.1`) | Bug fixes only, in any package |
+
+So pinning `@jupyter-kit/react@^3.0.0` is safe in the same sense as
+pinning any normal package — you'll get patches and additive features,
+not breaking changes — even though the underlying motion came from a
+sibling package.
+
+## Pre-release cadence
+
+Pre-1.0 work and major-version reworks ship as **rc.X tags**:
+
+```
+3.0.0-rc.0   → 3.0.0-rc.1   → … → 3.0.0   (stable major)
+4.0.0-rc.0   → …
+```
+
+- **`rc.X`** publishes to the npm dist-tag `next`. Install with
+  `pnpm add @jupyter-kit/react@next`.
+- **Stable** (`X.Y.Z`, no suffix) publishes to the default `latest`
+  dist-tag. Install with `pnpm add @jupyter-kit/react`.
+
+`rc` versions can have breaking changes between `rc.X` and `rc.X+1` —
+the `next` tag is for early adopters who want to track the head of
+development. Production users should pin to a specific `rc.X` or wait
+for the stable release.
+
+## How a release happens
+
+Internal flow, in case you're contributing or curious:
+
+1. **Bump the workspace.** `pnpm bump 3.0.0-rc.9` rewrites the version
+   in the root `package.json` and every `packages/*/package.json` (skip
+   private), and rebuilds `@jupyter-kit/theme` so the generated
+   `dist-publish/theme-*` packages pick up the new version.
+2. **Tag.** `pnpm tag:push` creates a single git tag `v<version>` on the
+   current commit and pushes it to the origin remote.
+3. **CI publishes.** The release workflow fires on `v*` tag pushes,
+   builds every package, and runs `pnpm release` (= `release-all.sh`)
+   which:
+   - Iterates `packages/*/` and publishes every public workspace package.
+   - Iterates `packages/theme/dist-publish/theme-*/` and publishes every
+     generated chrome / `theme-all`.
+   - Skips packages whose `package.json` has `"private": true`.
+   - Picks the npm dist-tag automatically: pre-release version → `next`,
+     stable → `latest`.
+4. **Already-published versions are silently skipped.** Re-running a
+   publish for a version that's already on npm is a no-op, so manual
+   reruns are safe.
+
+## What to pin
+
+| Audience | Recommended spec |
+|---|---|
+| Production app | `^3.0.0` once stable lands. Pre-stable: pin to a known-good `3.0.0-rc.X` exactly. |
+| Demo / playground | `next` (always the latest pre-release). Re-install when something breaks. |
+| Internal tooling sharing the workspace | `workspace:*` (resolves to the local source). |
+
+If you find a regression between two `rc.X` versions, please file an
+issue with both version numbers and the reproduction. The single-version
+policy makes bisecting the *workspace* easy; bisecting *which package
+inside it broke* is on us.

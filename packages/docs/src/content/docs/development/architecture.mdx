@@ -1,0 +1,213 @@
+---
+title: Architecture
+description: How the @jupyter-kit packages compose — core renderer, framework wrappers, plugins, executors, and the data flow between them.
+---
+
+import Mermaid from '../../../components/Mermaid.tsx';
+
+`@jupyter-kit` is built as four orthogonal layers that compose at runtime
+through small, framework-agnostic interfaces. You can swap any one
+(framework wrapper, executor, theme, plugins) without touching the
+others.
+
+## Layers
+
+| Layer | What | Pick |
+|---|---|---|
+| **Framework wrapper** | Mounts the renderer into your app | one of `react` / `vue` / `svelte` / `wc` (or vanilla `core`) |
+| **Core renderer** | `ipynb` → cells → DOM. Markdown pipeline + Lezer syntax + DOMPurify. | `core` (always) |
+| **Plugins** | `remark` / `rehype` / `setup` / `onMarkdownRendered` / `renderOutput` hooks | zero or more of `editor-codemirror`, `katex` / `katex-cdn`, `mathjax` / `mathjax-cdn`, `widgets` |
+| **Executor** | `execute(src, lang)` + optional `commProvider` for Run / Shift+Enter | optional, one of `executor-pyodide`, `executor-webr`, `executor-jupyter` |
+
+### 1. Core (`@jupyter-kit/core`)
+
+The renderer. Takes an `Ipynb` document and a target `HTMLElement`, walks
+the cells, and produces DOM with proper `.cell` / `.text_cell_render` /
+`.output_area` structure (the Jupyter classnames). Everything below is
+configuration.
+
+Key public surface:
+
+| Export | Purpose |
+|---|---|
+| `createRenderer(options)` | Returns `{ mount(target, ipynb) → handle }`. The handle exposes `update`, `cell(i)`, `cells()`, `destroy`. |
+| `Plugin` interface | Described under [Plugins](#3-plugins). |
+| `Executor` interface | `execute(src, lang, signal?) → OutputType[]` + optional `commProvider`. |
+| `defaultHtmlFilter` | DOMPurify-based sanitiser used for raw HTML cells / outputs. |
+| `buildMarkdownProcessor` | The unified pipeline factory plugins inject themselves into. |
+| `highlight`, `remarkLatexEnvironment`, `remarkPromoteDisplayMath` | Reusable building blocks, also consumed internally. |
+
+Core has **zero framework dependencies**. It only touches the DOM via
+`document.createElement`, mutating in place. SSR is out of scope by
+design — the renderer is for the client.
+
+### 2. Framework wrappers (`react`, `vue`, `svelte`, `wc`)
+
+Each wrapper is a ~100-line file that:
+
+1. Takes props matching `RendererOptions` plus `ipynb`.
+2. On mount, creates an internal container `<div>`, calls `createRenderer().mount(div, ipynb)`.
+3. On `ipynb` change, calls the cheaper `handle.update(ipynb)` so DOM
+   (and active CodeMirror editors) isn't torn down.
+4. On option-shape change (plugins / executor / className / …) destroys
+   and remounts.
+5. On unmount, calls `handle.destroy()`.
+
+The four wrappers share semantically identical props:
+
+| Wrapper | Component / element | Notes |
+|---|---|---|
+| `@jupyter-kit/react` | `<Notebook>` | hooks-based; safe under StrictMode double-mount. |
+| `@jupyter-kit/vue` | `<Notebook>` | composition API; uses `shallowRef` for `ipynb`. |
+| `@jupyter-kit/svelte` | `<Notebook>` | Svelte 5 runes (`$state`, `$effect`). |
+| `@jupyter-kit/wc` | `<jk-notebook>` custom element | object props are JS properties, primitives are HTML attributes (`getAttribute`). |
+
+Adding a fifth wrapper (Solid? Lit? Preact?) is straightforward — copy
+one of the existing files and translate the lifecycle hooks.
+
+### 3. Plugins
+
+A plugin is a plain object implementing some subset of:
+
+```ts
+type Plugin = {
+  name: string;
+  remarkPlugins?: PluggableList;     // injected into the markdown pipeline
+  rehypePlugins?: PluggableList;     // injected after remark→rehype
+  setup?(ctx: RuntimeContext): void; // called once per mount; receives executor / cell APIs
+  onMarkdownRendered?(el: HTMLElement): void; // after each markdown cell renders
+  renderOutput?(out: OutputType, slot: HTMLElement, ctx: RuntimeContext): boolean;
+                                     // claim a specific output type; return true to skip default
+  teardown?(): void;
+};
+```
+
+Existing plugins in this repo:
+
+| Package | What it hooks |
+|---|---|
+| `editor-codemirror` | Inline editor + Shift+Enter run + per-cell toolbar; replaces the read-only highlighted view with a CodeMirror instance |
+| `katex` / `katex-cdn` | `remark-math` + KaTeX — bundled vs CDN-loaded |
+| `mathjax` / `mathjax-cdn` | `remark-math` + MathJax SVG — bundled vs CDN-loaded |
+| `widgets` | Claims `application/vnd.jupyter.widget-view+json` outputs and renders them via `@jupyter-widgets/html-manager` |
+
+Plugins are pure data — they don't import from each other. The
+`renderOutput` hook is checked in registration order; first plugin that
+returns `true` wins, falling through to the default renderer otherwise.
+
+### 4. Executors (optional)
+
+Anything implementing the `Executor` type. Cells with code call
+`ctx.executor?.execute(source, language, signal)` when the user clicks
+Run (or Shift+Enter). The returned `OutputType[]` replaces the cell's
+outputs.
+
+Three first-party executors:
+
+| Package | Where the code runs | Comm support |
+|---|---|---|
+| `executor-pyodide` | Python in a browser Web Worker | yes (in-process Comm shim) |
+| `executor-webr` | R in a browser Web Worker | no (WebR doesn't expose Comm) |
+| `executor-jupyter` | Remote Jupyter Server kernel via WebSocket | yes (full kernel-side Comm bridge) |
+
+Building a custom executor (Deno, WASI, your-proprietary-API) is just
+implementing the two-method `Executor` interface — see
+[`reference/core/#executor`](/reference/core/#executor).
+
+## Data flow: a cell render
+
+<Mermaid client:only="react" code={`
+sequenceDiagram
+  participant U as User
+  participant W as Wrapper (Notebook)
+  participant C as Core (renderer)
+  participant P as Plugins
+  participant X as Executor
+
+  W->>C: createRenderer(opts).mount(target, ipynb)
+  C->>C: build .jknb-root container
+  C->>P: plugin.setup(ctx) (each, in order)
+  loop for each cell
+    alt markdown cell
+      C->>P: unified pipeline (remark/rehype hooks)
+      C->>C: DOMPurify sanitise
+      C->>P: onMarkdownRendered(el)
+    else code cell
+      C->>C: Lezer highlight (or editor plugin takes over)
+      loop for each output
+        C->>P: renderOutput(out, slot, ctx)?
+        alt plugin claimed
+          P-->>C: true
+        else default path
+          C->>C: buildDefaultOutput(out)
+        end
+      end
+    end
+  end
+  C-->>W: handle (update / rerun / destroy)
+
+  U->>W: click Run / Shift+Enter
+  W->>C: cellHandle.rerun()
+  C->>X: execute(source, lang, signal)
+  X-->>C: OutputType[]
+  C->>C: replace cell outputs
+`} />
+
+In words:
+
+1. `Notebook` mounts → `createRenderer({plugins, executor, languages, …}).mount(target, ipynb)`.
+2. Core appends a `.jknb-root` container, runs every plugin's
+   `setup(ctx)` in declaration order.
+3. Per cell:
+   - Markdown → unified pipeline (with plugin remark/rehype additions) →
+     DOMPurify sanitise → `onMarkdownRendered(el)` callbacks.
+   - Code → Lezer highlight (or `editor-codemirror` if installed) →
+     outputs rendered via `OutputArea`; first plugin returning `true`
+     from `renderOutput` claims the MIME, otherwise the default
+     renderer takes over.
+4. User clicks Run → `cellHandle.rerun()` → `ctx.executor.execute(src, lang)`
+   → outputs replace the cell's `output_wrapper` children.
+5. `ctx.notebook()` exposes live state for save/download (Cmd+S
+   triggers `RendererOptions.onSave` or the default download).
+
+## Module relationships at a glance
+
+<Mermaid client:only="react" code={`
+flowchart LR
+  classDef core fill:#fef3c7,stroke:#f59e0b,color:#78350f
+  classDef wrapper fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
+  classDef plugin fill:#dcfce7,stroke:#10b981,color:#064e3b
+  classDef comm fill:#f3f4f6,stroke:#6b7280,color:#1f2937
+
+  Wrappers["wrappers<br/>react · vue · svelte · wc"]:::wrapper
+  Core["@jupyter-kit/core<br/>renderer + types"]:::core
+  PluginsExec["plugins / executors<br/>editor · katex · mathjax · widgets<br/>pyodide · webr · jupyter"]:::plugin
+  Comm["@jupyter-kit/comm<br/>protocol types · 0 KB runtime"]:::comm
+
+  Wrappers -->|peerDep| Core
+  PluginsExec -->|peerDep| Core
+  PluginsExec -.->|optional| Comm
+`} />
+
+- **Core depends on nothing** in this workspace.
+- **Wrappers depend only on core** (peer).
+- **Plugins / executors depend on core** (peer) and **comm** (where
+  applicable).
+- The user installs **one wrapper** + **zero or more** plugins / executors.
+
+## Build pipeline
+
+| Tool | Where | Why |
+|---|---|---|
+| **tsup** (esbuild) | `core`, all framework wrappers, all plugins, all executors | Single-file ESM with .d.ts. Fast, zero-config. |
+| **`@sveltejs/package`** | `svelte` | `.svelte` → published component via the official Svelte tooling. |
+| **`build.mjs`** (LESS + esbuild) | `theme` | Compiles every `*.less` chrome under `themes/chrome/*.css`, then assembles publishable `theme-<chrome>` and `theme-all` packages under `dist-publish/`. The version is read from the source `package.json` so `pnpm bump` keeps everything aligned. |
+| **Astro + Starlight** | `docs` | This site. SSG with React islands for live demos. |
+| **Storybook 8 + Vite** | `storybook` | Interactive stories for every executor / plugin / theme combo. |
+| **Playwright** | `e2e` | Headless-browser regression suite (XSS, MathJax, KaTeX, theme rendering, …). |
+
+## Versioning + release wiring
+
+All packages publish on the same git tag, at the same version. See
+[Versioning](/development/versioning/) for the policy and the scripts
+that automate it.

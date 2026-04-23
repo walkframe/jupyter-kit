@@ -18,10 +18,10 @@
     "storybook:build": "pnpm --filter @jupyter-kit/storybook build:static",
     "bump": "node ./scripts/bump-version.mjs",
     "release": "./scripts/release-all.sh",
-    "tag": "./scripts/tag-all.sh",
-    "tag:push": "./scripts/tag-all.sh --push",
-    "untag": "./scripts/untag-all.sh",
-    "untag:remote": "./scripts/untag-all.sh --remote"
+    "tag": "./scripts/tag.sh",
+    "tag:push": "./scripts/tag.sh --push",
+    "untag": "./scripts/untag.sh",
+    "untag:remote": "./scripts/untag.sh --remote"
   },
   "devDependencies": {
     "@types/node": "^20.12.0",

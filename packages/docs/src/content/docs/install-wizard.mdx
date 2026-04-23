@@ -60,7 +60,7 @@ Approximate client-side bundle impact (minified, no gzip):
 | `@jupyter-kit/executor-pyodide` | ~320 KB | Editor + worker bridge. Pyodide itself (~10 MB) is fetched from CDN at first run |
 | `@jupyter-kit/executor-webr` | ~300 KB | Editor + `webr`. WebR runtime fetched at first run |
 | `@jupyter-kit/executor-jupyter` | ~10 KB | REST + WebSocket client for a remote Jupyter Server. No bundled runtime |
-| `@jupyter-kit/widgets` | ~600 KB – 1 MB | `@jupyter-widgets/{base,controls,html-manager,output}` pulled in lazily via dynamic import |
+| `@jupyter-kit/widgets` | ~1.0 – 1.4 MB | `@jupyter-widgets/{base,controls,html-manager,output}` + jquery (~85 KB min) + jquery-ui (~250 KB min), all pulled in lazily via dynamic import |
 | `@jupyter-kit/comm` | 0 KB | Types only — no runtime bytes |
 | `@jupyter-kit/katex-cdn` | ~2 KB | KaTeX (~70 KB gz) fetched from CDN |
 | `@jupyter-kit/mathjax-cdn` | ~2 KB | MathJax fetched from CDN |
@@ -83,7 +83,7 @@ Installing a wrapper / plugin pulls in everything it depends on:
 | `@jupyter-kit/executor-pyodide` | `@jupyter-kit/{editor-codemirror,comm}` + CodeMirror + grammars |
 | `@jupyter-kit/executor-webr` | `@jupyter-kit/editor-codemirror` + `webr` |
 | `@jupyter-kit/executor-jupyter` | `@jupyter-kit/comm` |
-| `@jupyter-kit/widgets` | `@jupyter-widgets/{base,base-manager,controls,html-manager,output}` + `@jupyter-kit/comm` |
+| `@jupyter-kit/widgets` | `@jupyter-widgets/{base,base-manager,controls,html-manager,output}` + `@jupyter-kit/comm` + `jquery` + `jquery-ui` |
 | `@jupyter-kit/katex-cdn` / `mathjax-cdn` | Math engine fetched from CDN at runtime — nothing else to install |
 | Any `@jupyter-kit/theme-<name>` | 8 syntax themes under `./syntax/*.css` included |
 

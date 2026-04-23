@@ -22,6 +22,16 @@ export default defineConfig({
       // Vite's `console.warn` fires per access. Filter those out of the dev
       // console — production builds don't emit them so this is a no-op there.
       head: [
+        // Google Tag Manager — container GTM-MV78VXS5. Loads gtm.js in the
+        // background; per-page tracking is then wired up in GTM itself.
+        {
+          tag: 'script',
+          content: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MV78VXS5');`,
+        },
         {
           tag: 'script',
           content: `(() => {
@@ -68,6 +78,15 @@ export default defineConfig({
             { label: '@jupyter-kit/comm', slug: 'reference/comm' },
             { label: 'Math plugins', slug: 'reference/math-plugins' },
             { label: 'Themes', slug: 'reference/themes' },
+            { label: 'Security model', slug: 'reference/security' },
+          ],
+        },
+        {
+          label: 'Development',
+          items: [
+            { label: 'Architecture', slug: 'development/architecture' },
+            { label: 'Contributing', slug: 'development/contributing' },
+            { label: 'Versioning', slug: 'development/versioning' },
           ],
         },
         {

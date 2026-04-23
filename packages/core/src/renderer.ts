@@ -70,7 +70,13 @@ export function createRenderer(opts: RendererOptions = {}): Renderer {
       // execution outputs (mutated via CellHandle.setSource / setOutputs) end
       // up in any downloaded copy. Mutation methods then call this before
       // splicing to avoid using a stale snapshot.
+      //
+      // Guard against the initial-setup window where handles is still empty:
+      // plugins can call `ctx.notebook()` inside their `setup(ctx)` hook,
+      // which would otherwise wipe currentNotebook.cells to [] BEFORE the
+      // very first build() populates the handles.
       const syncNotebook = () => {
+        if (handles.length === 0) return currentNotebook;
         currentNotebook = {
           ...currentNotebook,
           cells: handles.map((h) => h.cell),

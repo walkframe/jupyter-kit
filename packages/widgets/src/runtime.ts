@@ -1,4 +1,16 @@
 import type { CommProvider } from '@jupyter-kit/comm';
+
+// `@jupyter-widgets/controls` slider widgets transitively depend on
+// jquery-ui, which expects `jQuery` / `$` on the global scope at module
+// init. Browser bundlers don't auto-expose CJS-style globals, so we
+// must seed `globalThis` before the html-manager module loads (its
+// import graph reaches jquery-ui synchronously).
+// @ts-expect-error — jquery has no bundled .d.ts
+import jquery from 'jquery';
+const g = globalThis as unknown as { jQuery?: unknown; $?: unknown };
+if (!g.jQuery) g.jQuery = jquery;
+if (!g.$) g.$ = jquery;
+
 import { HTMLManager } from '@jupyter-widgets/html-manager';
 
 // Widget CSS is shipped with `@jupyter-widgets/controls` but html-manager only

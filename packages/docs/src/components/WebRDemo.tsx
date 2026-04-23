@@ -37,6 +37,19 @@ export default function WebRDemo() {
   const executor = useMemo(
     () =>
       createWebRExecutor({
+        // The r.json fixture calls `library(ggplot2)` etc. WebR doesn't
+        // auto-install on `library()` (unlike pyodide's autoloadImports);
+        // preload them via webR.installPackages so the cells succeed on
+        // first run. RColorBrewer / farver / crayon / htmltools come along
+        // as ggplot2 dependencies but webr's resolver doesn't always pull
+        // them, so list them explicitly.
+        packages: [
+          'ggplot2',
+          'RColorBrewer',
+          'farver',
+          'crayon',
+          'htmltools',
+        ],
         onStatus: (s, d) => {
           setStatus(s);
           setDetail(d);

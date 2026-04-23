@@ -2,6 +2,19 @@ import type { Plugin, OutputType, RuntimeContext, Ipynb } from '@jupyter-kit/cor
 import type { CommProvider, CommMsg, CommOpenMsg } from '@jupyter-kit/comm';
 import type { KitManager } from './runtime';
 
+// `@jupyter-widgets/html-manager` (and its transitive @jupyterlab/* deps)
+// were bundled with webpack and reference `__webpack_public_path__` at
+// runtime to compute chunk URLs. Vite / Rollup don't define it, so loading
+// the runtime under those bundlers throws `ReferenceError: __webpack_public_path__`.
+// Set it to '' here, before any dynamic import of `./runtime`, so the
+// reference resolves to an empty string regardless of the host bundler.
+if (
+  typeof globalThis !== 'undefined' &&
+  !('__webpack_public_path__' in globalThis)
+) {
+  (globalThis as { __webpack_public_path__?: string }).__webpack_public_path__ = '';
+}
+
 const WIDGET_VIEW_MIME = 'application/vnd.jupyter.widget-view+json';
 const WIDGET_STATE_MIME = 'application/vnd.jupyter.widget-state+json';
 const WIDGET_TARGET = 'jupyter.widget';

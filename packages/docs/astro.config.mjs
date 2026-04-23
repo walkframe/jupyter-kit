@@ -48,6 +48,7 @@ export default defineConfig({
             { label: 'Theme switcher', slug: 'demos/themes' },
             { label: 'Run Python in-browser', slug: 'demos/pyodide' },
             { label: 'Run R + plots in-browser', slug: 'demos/webr' },
+            { label: 'Try in StackBlitz', slug: 'demos/stackblitz' },
           ],
         },
         {

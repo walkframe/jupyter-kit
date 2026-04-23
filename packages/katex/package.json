@@ -2,6 +2,16 @@
   "name": "@jupyter-kit/katex",
   "version": "3.0.0-rc.8",
   "description": "KaTeX (bundled) plugin for @jupyter-kit/core. Renders TeX via rehype-katex during markdown processing.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "math",
+    "latex",
+    "katex"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

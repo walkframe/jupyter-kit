@@ -2,6 +2,17 @@
   "name": "@jupyter-kit/executor-pyodide",
   "version": "3.0.0-rc.8",
   "description": "In-browser Python executor for @jupyter-kit. Loads Pyodide from a CDN (the runtime is ~10MB WASM, so bundling isn't practical).",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "pyodide",
+    "python",
+    "wasm",
+    "in-browser"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

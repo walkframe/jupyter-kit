@@ -2,6 +2,16 @@
   "name": "@jupyter-kit/editor-codemirror",
   "version": "3.0.0-rc.8",
   "description": "CodeMirror 6 based inline editor plugin for @jupyter-kit/core. Lazy-loadable — not pulled in when read-only.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "codemirror",
+    "editor",
+    "code-editor"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

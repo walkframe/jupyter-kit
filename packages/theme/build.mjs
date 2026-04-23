@@ -97,6 +97,16 @@ for (const chrome of chromeNames) {
     name: `@jupyter-kit/theme-${chrome}`,
     version: VERSION,
     description: `${chrome} chrome + syntax themes for @jupyter-kit.`,
+    keywords: [
+      'jupyter',
+      'ipynb',
+      'notebook',
+      'renderer',
+      'jupyter-kit',
+      'theme',
+      'css',
+      `theme-${chrome}`,
+    ],
     type: 'module',
     exports: {
       [`./${chrome}.css`]: `./${chrome}.css`,
@@ -139,6 +149,16 @@ for (const chrome of chromeNames) {
     version: VERSION,
     description:
       'All chrome + syntax themes for @jupyter-kit in one package. Use subpaths to import the variant you want.',
+    keywords: [
+      'jupyter',
+      'ipynb',
+      'notebook',
+      'renderer',
+      'jupyter-kit',
+      'theme',
+      'css',
+      'theme-switcher',
+    ],
     type: 'module',
     exports,
     files: ['chrome', 'syntax'],

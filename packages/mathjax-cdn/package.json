@@ -2,6 +2,17 @@
   "name": "@jupyter-kit/mathjax-cdn",
   "version": "3.0.0-rc.8",
   "description": "MathJax via CDN <script> injection for @jupyter-kit/core. Tiny plugin, MathJax loads in the browser.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "math",
+    "latex",
+    "mathjax",
+    "cdn"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

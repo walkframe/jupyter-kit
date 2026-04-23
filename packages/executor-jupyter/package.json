@@ -2,6 +2,17 @@
   "name": "@jupyter-kit/executor-jupyter",
   "version": "3.0.0-rc.8",
   "description": "Remote Jupyter kernel executor for @jupyter-kit. Talks to a running Jupyter Server (or JupyterHub / BinderHub / Enterprise Gateway) over the standard kernel WebSocket protocol — language-agnostic, works with any installed kernel (Python, R, Julia, ...).",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "jupyter-server",
+    "kernel",
+    "websocket",
+    "remote-execution"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

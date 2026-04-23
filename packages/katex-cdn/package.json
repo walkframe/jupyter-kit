@@ -2,6 +2,17 @@
   "name": "@jupyter-kit/katex-cdn",
   "version": "3.0.0-rc.8",
   "description": "KaTeX via CDN loader for @jupyter-kit/core. Tiny bundle; KaTeX auto-render runs in the browser.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "math",
+    "latex",
+    "katex",
+    "cdn"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

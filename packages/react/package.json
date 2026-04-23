@@ -2,6 +2,15 @@
   "name": "@jupyter-kit/react",
   "version": "3.0.0-rc.8",
   "description": "React wrapper around @jupyter-kit/core.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "react",
+    "react-component"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

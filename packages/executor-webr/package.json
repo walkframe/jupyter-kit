@@ -2,6 +2,18 @@
   "name": "@jupyter-kit/executor-webr",
   "version": "3.0.0-rc.8",
   "description": "In-browser R executor for @jupyter-kit. Wraps WebR (https://webr.r-wasm.org), which runs R compiled to WebAssembly inside a worker.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "webr",
+    "r",
+    "statistics",
+    "wasm",
+    "in-browser"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

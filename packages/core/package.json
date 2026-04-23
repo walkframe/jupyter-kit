@@ -2,6 +2,17 @@
   "name": "@jupyter-kit/core",
   "version": "3.0.0-rc.8",
   "description": "Framework-agnostic Jupyter notebook renderer with built-in syntax highlighting (Lezer) and a plugin runtime.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "markdown",
+    "lezer",
+    "syntax-highlighting",
+    "sanitizer"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -98,12 +109,6 @@
     "jsdom": "^26.0.0",
     "vitest": "^2.1.0"
   },
-  "keywords": [
-    "jupyter",
-    "ipynb",
-    "notebook",
-    "renderer"
-  ],
   "author": "righ",
   "license": "Apache-2.0",
   "repository": {

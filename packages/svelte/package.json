@@ -2,6 +2,15 @@
   "name": "@jupyter-kit/svelte",
   "version": "3.0.0-rc.8",
   "description": "Svelte 5 wrapper around @jupyter-kit/core.",
+  "keywords": [
+    "jupyter",
+    "ipynb",
+    "notebook",
+    "renderer",
+    "jupyter-kit",
+    "svelte",
+    "svelte5"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

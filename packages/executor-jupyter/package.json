@@ -38,5 +38,5 @@
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/executor-jupyter"
   },
-  "homepage": "https://jupyter-kit.walkframe.com"
+  "homepage": "https://jupyter-kit.walkframe.com/reference/executor-jupyter/"
 }

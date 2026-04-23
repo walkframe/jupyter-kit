@@ -41,5 +41,5 @@
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/react"
   },
-  "homepage": "https://jupyter-kit.walkframe.com"
+  "homepage": "https://jupyter-kit.walkframe.com/reference/react/"
 }

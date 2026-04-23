@@ -29,5 +29,5 @@
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/comm"
   },
-  "homepage": "https://jupyter-kit.walkframe.com"
+  "homepage": "https://jupyter-kit.walkframe.com/reference/comm/"
 }

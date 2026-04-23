@@ -111,5 +111,5 @@
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/core"
   },
-  "homepage": "https://jupyter-kit.walkframe.com"
+  "homepage": "https://jupyter-kit.walkframe.com/reference/core/"
 }

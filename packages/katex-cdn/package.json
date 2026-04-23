@@ -39,5 +39,5 @@
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/katex-cdn"
   },
-  "homepage": "https://jupyter-kit.walkframe.com"
+  "homepage": "https://jupyter-kit.walkframe.com/reference/math-plugins/"
 }

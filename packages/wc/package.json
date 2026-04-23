@@ -32,5 +32,5 @@
     "url": "git+https://github.com/walkframe/jupyter-kit.git",
     "directory": "packages/wc"
   },
-  "homepage": "https://jupyter-kit.walkframe.com"
+  "homepage": "https://jupyter-kit.walkframe.com/reference/wc/"
 }

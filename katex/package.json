@@ -1,8 +1,8 @@
 {
   "name": "react-ipynb-renderer-katex",
-  "homepage": "https://docs.walkframe.com/products/react-ipynb-renderer/",
-  "version": "2.3.1",
-  "description": "A react component that displays an ipynb file for katex.",
+  "homepage": "https://jupyter-kit.walkframe.com/history/migration-guide/",
+  "version": "2.3.2",
+  "description": "[DEPRECATED, NO LONGER MAINTAINED] Use @jupyter-kit/react with @jupyter-kit/katex-cdn (recommended) or @jupyter-kit/katex. See migration guide: https://jupyter-kit.walkframe.com/history/migration-guide/",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {

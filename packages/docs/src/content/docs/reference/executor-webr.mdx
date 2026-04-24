@@ -96,8 +96,8 @@ Know this before shipping WebR on a public page:
 
 ### What the renderer itself does NOT protect against
 
-The DOMPurify / `rehype-sanitize` pipeline guards the **rendered output
-DOM** from XSS. It runs *after* the executor has already finished. That
+DOMPurify guards the **rendered output DOM** from XSS. It runs *after*
+the executor has already finished. That
 means anything R code does with `download.file` / `readLines` / WebR's
 direct DOM access (via `webr_call_js`) bypasses the renderer's sanitiser.
 See the [Pyodide security section](/reference/executor-pyodide/#security)

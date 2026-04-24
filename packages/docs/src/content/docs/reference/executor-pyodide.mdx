@@ -98,9 +98,9 @@ Know this before shipping Pyodide on a public page:
 
 ### What the renderer itself does NOT protect against
 
-The DOMPurify / `rehype-sanitize` pipeline protects the **rendered DOM**
-from XSS — script tags, `javascript:` hrefs, `onerror=` etc. are stripped
-before they reach the browser. The executor opens a separate attack
+DOMPurify protects the **rendered DOM** from XSS — script tags,
+`javascript:` hrefs, `onerror=` etc. are stripped before they reach the
+browser. The executor opens a separate attack
 surface that runs BEFORE that pipeline: anything Python does with
 `fetch`, `window`, or `document` via Pyodide's `js` module bypasses the
 renderer's sanitiser entirely. Treat executor input the same as you'd

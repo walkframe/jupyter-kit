@@ -63,9 +63,9 @@ test.describe('security: XSS payloads do not execute', () => {
     const scriptCountInside = await page.locator('.jknb-root script').count();
     expect(scriptCountInside).toBe(0);
 
-    // `javascript:` href must be neutralised (rehype-sanitize drops the
-    // whole href; DOMPurify replaces it with `#`). Either way, no anchor
-    // inside the notebook should point at a `javascript:` URL.
+    // `javascript:` href must be neutralised — DOMPurify replaces it with
+    // `#`, so no anchor inside the notebook should point at a
+    // `javascript:` URL.
     const jsHrefs = await page.locator('.jknb-root a[href^="javascript:"]').count();
     expect(jsHrefs).toBe(0);
   });

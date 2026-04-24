@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/mathjax",
-  "version": "3.0.0-rc.8",
+  "version": "3.0.0",
   "description": "MathJax (bundled) plugin for @jupyter-kit/core. Renders TeX via rehype-mathjax during markdown processing.",
   "keywords": [
     "jupyter",

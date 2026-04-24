@@ -10,9 +10,10 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@jupyter-kit/react"><img src="https://img.shields.io/npm/v/@jupyter-kit/react?label=%40jupyter-kit%2Freact" alt="npm @jupyter-kit/react" /></a>
+  <a href="https://www.npmjs.com/package/@jupyter-kit/vue"><img src="https://img.shields.io/npm/v/@jupyter-kit/vue?label=%40jupyter-kit%2Fvue" alt="npm @jupyter-kit/vue" /></a>
+  <a href="https://www.npmjs.com/package/@jupyter-kit/svelte"><img src="https://img.shields.io/npm/v/@jupyter-kit/svelte?label=%40jupyter-kit%2Fsvelte" alt="npm @jupyter-kit/svelte" /></a>
   <a href="https://github.com/walkframe/jupyter-kit/actions/workflows/e2e.yaml"><img src="https://github.com/walkframe/jupyter-kit/actions/workflows/e2e.yaml/badge.svg?branch=master" alt="e2e" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@jupyter-kit/react" alt="license" /></a>
-  <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fwalkframe%2Fjupyter-kit?ref=badge_shield"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwalkframe%2Fjupyter-kit.svg?type=shield" alt="FOSSA status" /></a>
 </p>
 
 ---

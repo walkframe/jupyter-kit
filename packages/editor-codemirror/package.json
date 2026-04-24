@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/editor-codemirror",
-  "version": "3.0.0-rc.8",
+  "version": "3.0.0",
   "description": "CodeMirror 6 based inline editor plugin for @jupyter-kit/core. Lazy-loadable — not pulled in when read-only.",
   "keywords": [
     "jupyter",

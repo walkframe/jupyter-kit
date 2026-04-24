@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/core",
-  "version": "3.0.0-rc.8",
+  "version": "3.0.0",
   "description": "Framework-agnostic Jupyter notebook renderer with built-in syntax highlighting (Lezer) and a plugin runtime.",
   "keywords": [
     "jupyter",

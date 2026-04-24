@@ -1,7 +1,7 @@
 {
   "name": "jupyter-kit-workspace",
   "private": true,
-  "version": "3.0.0-rc.8",
+  "version": "3.0.0",
   "description": "Monorepo for @jupyter-kit packages (core, react, vue, wc, plugins, executors, themes).",
   "type": "module",
   "scripts": {

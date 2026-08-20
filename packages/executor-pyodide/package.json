@@ -31,6 +31,8 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -41,7 +43,8 @@
     "@jupyter-kit/core": "workspace:*"
   },
   "devDependencies": {
-    "@jupyter-kit/core": "workspace:*"
+    "@jupyter-kit/core": "workspace:*",
+    "vitest": "^2.1.0"
   },
   "author": "righ",
   "license": "Apache-2.0",

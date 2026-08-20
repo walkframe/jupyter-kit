@@ -234,6 +234,9 @@ importers:
       '@jupyter-kit/core':
         specifier: workspace:*
         version: link:../core
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@24.12.2)(jsdom@26.1.0)(less@4.4.1)(lightningcss@1.32.0)
 
   packages/executor-webr:
     dependencies:

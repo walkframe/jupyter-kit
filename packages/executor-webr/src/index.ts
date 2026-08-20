@@ -188,7 +188,8 @@ export function createWebRExecutor(
           outputs.push({
             output_type: 'stream',
             name: currentName,
-            text: [buffer.join('') + (buffer[buffer.length - 1].endsWith('\n') ? '' : '\n')],
+            // Each chunk was pushed with a trailing '\n', so joining is enough.
+            text: [buffer.join('')],
           });
           buffer = [];
           currentName = null;

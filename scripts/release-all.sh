@@ -14,6 +14,11 @@ set -uo pipefail
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$REPO_ROOT"
 
+# Names of packages whose publish genuinely failed (i.e. not an
+# already-published skip). Collected so the script can exit non-zero at the
+# end instead of masking a broken release as green.
+FAILED_PKGS=()
+
 # Always rebuild theme so dist-publish/theme-*/ reflects the current
 # packages/theme/less/ source. Cheap (less + esbuild minify, ~1s) and
 # guarantees a release never ships stale CSS.
@@ -42,8 +47,23 @@ publish_dir() {
   fi
 
   echo "::group::publish $NAME@$VERSION $TAG"
-  (cd "$dir" && pnpm publish --access public $TAG --no-git-checks --provenance) \
-    || echo "  -> skipped (already published or publish failed)"
+  local OUT STATUS
+  # Capture combined output so we can tell an already-published version (safe
+  # to skip) apart from a genuine failure (must fail the release).
+  OUT=$(cd "$dir" && pnpm publish --access public $TAG --no-git-checks --provenance 2>&1)
+  STATUS=$?
+  echo "$OUT"
+  if [ "$STATUS" -ne 0 ]; then
+    # npm returns EPUBLISHCONFLICT / 403 "cannot publish over the previously
+    # published versions" when the version already exists — that's an expected
+    # idempotent skip, not a failure.
+    if echo "$OUT" | grep -qiE 'EPUBLISHCONFLICT|cannot publish over|previously published|403 Forbidden.*over'; then
+      echo "  -> skipped (already published)"
+    else
+      echo "  -> FAILED to publish $NAME@$VERSION"
+      FAILED_PKGS+=("$NAME@$VERSION")
+    fi
+  fi
   echo "::endgroup::"
 }
 
@@ -58,3 +78,10 @@ done
 for theme_dir in packages/theme/dist-publish/theme-*/; do
   publish_dir "${theme_dir%/}"
 done
+
+if [ "${#FAILED_PKGS[@]}" -gt 0 ]; then
+  echo "::error::release failed for ${#FAILED_PKGS[@]} package(s): ${FAILED_PKGS[*]}"
+  exit 1
+fi
+
+echo "release complete."

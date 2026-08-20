@@ -105,6 +105,11 @@ export function createJupyterExecutor(
   };
   const handlers = new Map<string, RequestHandler>();
 
+  // In-flight execute() settlers. If the socket drops mid-execution, the kernel
+  // will never post the `idle`/reply that finalizes these, so the close handler
+  // settles them explicitly instead of leaving callers awaiting forever.
+  const pending = new Set<(reason: string) => void>();
+
   // Comm bridge state.
   const openHandlers = new Map<string, CommOpenHandler>();
   const msgListeners = new Map<string, (msg: CommMsg) => void>();
@@ -177,6 +182,10 @@ export function createJupyterExecutor(
         opts.onStatus?.('disconnected');
         ws = null;
         wsReady = null;
+        // Settle every in-flight execute so callers don't hang on a dead
+        // socket, then drop the now-unreachable request handlers.
+        for (const settle of [...pending]) settle('WebSocket closed');
+        handlers.clear();
       });
 
       ws = socket;
@@ -381,15 +390,36 @@ export function createJupyterExecutor(
           stop_on_error: true,
         });
 
+        let settled = false;
         let replyArrived = false;
         let idleArrived = false;
+
+        // Single teardown + resolve for every exit path (normal finalize,
+        // abort, socket close). Guards against double-resolve and always
+        // detaches the handler + abort listener + pending entry.
+        const settle = (result: OutputType[]) => {
+          if (settled) return;
+          settled = true;
+          handlers.delete(msgId);
+          pending.delete(onDisconnect);
+          signal?.removeEventListener('abort', onAbort);
+          resolve(result);
+        };
+
         const finalize = () => {
           if (!replyArrived || !idleArrived) return;
           flush();
-          handlers.delete(msgId);
           opts.onStatus?.('ready');
-          resolve(outputs);
+          settle(outputs);
         };
+
+        // Called by the socket `close` handler if this execute is still in
+        // flight. Surface the partial outputs plus a disconnect error.
+        const onDisconnect = (reason: string) => {
+          flush();
+          settle([...outputs, makeError('DisconnectedError', reason)]);
+        };
+        pending.add(onDisconnect);
 
         const onAbort = () => {
           if (kernel) {
@@ -399,6 +429,10 @@ export function createJupyterExecutor(
               headers: authHeaders(),
             }).catch(() => {});
           }
+          // Stop waiting on the kernel and return whatever streamed so far;
+          // the interrupt request races on independently.
+          flush();
+          settle(outputs);
         };
         signal?.addEventListener('abort', onAbort, { once: true });
 

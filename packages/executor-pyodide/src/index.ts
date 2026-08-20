@@ -299,6 +299,44 @@ export function createPyodideExecutor(
       opts.onStatus?.('loading');
 
       return new Promise<OutputType[]>((resolve) => {
+        let settled = false;
+
+        // Single teardown for every exit path (done / worker crash / abort).
+        // Without this, a worker that dies before posting `done` — a boot
+        // failure, a wasm OOM, an uncaught error — leaves `onMessage` attached
+        // forever and the caller awaiting a promise that never settles.
+        const cleanup = () => {
+          w.removeEventListener('message', onMessage);
+          w.removeEventListener('error', onError);
+          signal?.removeEventListener('abort', onAbort);
+        };
+        const settle = (result: OutputType[]) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(result);
+        };
+
+        // Worker-level crash (uncaught error in the worker global scope). Surface
+        // it as an error output in the cell rather than hanging.
+        const onError = (e: ErrorEvent) => {
+          flushCurrent();
+          opts.onStatus?.('error', e.message);
+          outputs.push(
+            makeError('WorkerError', e.message || 'Pyodide worker crashed'),
+          );
+          settle(outputs);
+        };
+
+        // Mid-run abort: stop listening and resolve with whatever streamed so
+        // far. The worker keeps running to completion (Pyodide executes
+        // synchronously and can't be interrupted here), but its later messages
+        // are ignored now that our listener is detached.
+        const onAbort = () => {
+          flushCurrent();
+          settle(outputs);
+        };
+
         const onMessage = (e: MessageEvent) => {
           const m = e.data as ToMain;
           if (!m || m.id !== id) return;
@@ -345,13 +383,19 @@ export function createPyodideExecutor(
               break;
             case 'done':
               flushCurrent();
-              w.removeEventListener('message', onMessage);
               opts.onStatus?.('ready');
-              resolve(outputs);
+              settle(outputs);
               break;
           }
         };
+
+        if (signal?.aborted) {
+          settle(outputs);
+          return;
+        }
         w.addEventListener('message', onMessage);
+        w.addEventListener('error', onError);
+        signal?.addEventListener('abort', onAbort, { once: true });
         w.postMessage({
           type: 'execute',
           id,

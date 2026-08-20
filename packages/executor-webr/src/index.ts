@@ -149,17 +149,34 @@ export function createWebRExecutor(
       // Shelter scopes the lifecycle of R objects so they can be freed in one
       // shot at the end (avoids leaking R memory across cells).
       const shelter = await new wr.Shelter();
+
+      // WebR exposes no way to cancel an in-flight computation, but we can stop
+      // awaiting it so an aborted cell doesn't block the caller. Race captureR
+      // against the abort signal; the WebR worker keeps running in the
+      // background (its result is discarded).
+      let abortReject: (() => void) | null = null;
+      const onAbort = () => abortReject?.();
+      signal?.addEventListener('abort', onAbort, { once: true });
+
       try {
         // `withAutoprint: true` makes WebR run the code REPL-style — bare
         // expressions get printed to stdout via R's `print()` so we capture
         // properly formatted values (`[1] 3`) rather than the JS-side
         // `[object RObject:double]` toString.
-        const result = await shelter.captureR(source, {
+        const capture = shelter.captureR(source, {
           captureStreams: true,
           captureConditions: true,
           captureGraphics: true,
           withAutoprint: true,
         });
+        const result = signal
+          ? await Promise.race([
+              capture,
+              new Promise<never>((_, rej) => {
+                abortReject = () => rej(new Error('aborted'));
+              }),
+            ])
+          : await capture;
 
         // Coalesce contiguous stdout/stderr chunks into single stream outputs
         // (matches Jupyter's interleaving — see executor-pyodide for the
@@ -201,8 +218,11 @@ export function createWebRExecutor(
           }
         }
       } catch (err) {
-        outputs.push(toErrorOutput(err));
+        // A user-initiated abort surfaces here via the race; return the partial
+        // outputs without an error entry. Genuine R errors still render.
+        if (!signal?.aborted) outputs.push(toErrorOutput(err));
       } finally {
+        signal?.removeEventListener('abort', onAbort);
         try {
           await shelter.purge();
         } catch {

@@ -57,6 +57,9 @@ function Component(
   ]);
 
   // Re-render cells when ipynb changes, without rebuilding the renderer.
+  // update() reconciles by cell object identity, so cells whose reference is
+  // unchanged keep their DOM and editor; pass immutably-updated notebooks
+  // (new objects only for changed cells) to get the most reuse.
   useEffect(() => {
     handleRef.current?.update(ipynb);
   }, [ipynb]);

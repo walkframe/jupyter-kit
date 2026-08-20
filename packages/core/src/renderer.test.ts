@@ -73,6 +73,67 @@ describe('notebook mutation', () => {
   });
 });
 
+describe('incremental update (reconciliation)', () => {
+  const root = () => host.querySelector<HTMLElement>('.jknb-root')!;
+
+  it('reuses the same DOM node for cells kept by object identity', () => {
+    const r = createRenderer();
+    const h = r.mount(host, nb());
+    const [a, , c] = h.cells();
+    const elA = a.el;
+    // Drop the middle cell but keep A and C by reusing their cell objects.
+    h.update({ cells: [a.cell, c.cell] });
+    const after = h.cells();
+    expect(after).toHaveLength(2);
+    expect(after[0].el).toBe(elA); // untouched DOM (would preserve editor focus)
+    expect(after[0].cell).toBe(a.cell);
+    expect(after[1].cell).toBe(c.cell);
+  });
+
+  it('reassigns indices of reused cells after a reorder', () => {
+    const r = createRenderer();
+    const h = r.mount(host, nb());
+    const [a, b, c] = h.cells().map((x) => x.cell);
+    h.update({ cells: [c, a, b] });
+    const after = h.cells();
+    expect(after.map((x) => x.index)).toEqual([0, 1, 2]);
+    expect(after.map((x) => x.cell)).toEqual([c, a, b]);
+    // DOM order matches the new cell order.
+    expect(Array.from(root().children)).toEqual(after.map((x) => x.el));
+  });
+
+  it('rebuilds cells whose identity changed', () => {
+    const r = createRenderer();
+    const h = r.mount(host, nb());
+    const elA = h.cells()[0].el;
+    // A brand-new notebook: all-new objects, so nothing matches by identity.
+    h.update(nb());
+    expect(h.cells()[0].el).not.toBe(elA);
+  });
+
+  it('detaches removed cell DOM from the root', () => {
+    const r = createRenderer();
+    const h = r.mount(host, nb());
+    const [a, , c] = h.cells();
+    const removedEl = c.el;
+    expect(root().contains(removedEl)).toBe(true);
+    h.update({ cells: [a.cell] });
+    expect(root().contains(removedEl)).toBe(false);
+    expect(root().children.length).toBe(1);
+  });
+
+  it('fires onRendered once per mount and per update', () => {
+    let count = 0;
+    const r = createRenderer({
+      plugins: [{ name: 'p', onRendered: () => void count++ }],
+    });
+    const h = r.mount(host, nb());
+    expect(count).toBe(1);
+    h.update({ cells: [] });
+    expect(count).toBe(2);
+  });
+});
+
 describe('execution count seeding', () => {
   it('continues from the highest existing execution_count', () => {
     // Seed a notebook with executions up to 7.

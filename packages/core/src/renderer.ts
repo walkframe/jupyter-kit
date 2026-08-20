@@ -1,5 +1,4 @@
 import type {
-  CellHandle,
   CellType,
   LanguageDef,
   Ipynb,
@@ -12,7 +11,7 @@ import type {
 } from './types';
 import { defaultHtmlFilter } from './filter';
 import { buildMarkdownProcessor } from './markdown';
-import { createCell } from './cell';
+import { createCell, type InternalCellHandle } from './cell';
 
 const DEFAULT_OPTIONS: ResolvedOptions = {
   language: 'python',
@@ -57,7 +56,7 @@ export function createRenderer(opts: RendererOptions = {}): Renderer {
       root.dataset.mathAlign = resolved.mathAlign;
       target.append(root);
 
-      const handles: CellHandle[] = [];
+      const handles: InternalCellHandle[] = [];
       // Ipynb-wide counter. Seeds from the highest existing execution_count
       // in the notebook so re-mounting an already-executed notebook keeps the
       // numbering monotonic.
@@ -138,20 +137,66 @@ export function createRenderer(opts: RendererOptions = {}): Renderer {
         }
       }
 
+      // Reconcile the rendered cells against `nb` instead of rebuilding from
+      // scratch. Cells are matched to existing handles by object identity, so
+      // unchanged cells keep their exact DOM — and any live editor/focus inside
+      // it. Internal mutations (move/delete/insert/duplicate) and immutable
+      // external updates preserve the identity of unchanged cells; a cell with
+      // no identity match is (re)built and a dropped handle is detached.
       const build = (nb: Ipynb) => {
-        root.replaceChildren();
-        handles.length = 0;
-        const cells = nb.cells || nb.worksheets?.[0]?.cells || [];
-        cells.forEach((cell, i) => {
-          const h = createCell(i, cell, {
+        const nextCells = nb.cells || nb.worksheets?.[0]?.cells || [];
+
+        const byCell = new Map<CellType, InternalCellHandle>();
+        for (const h of handles) {
+          // First writer wins so a duplicated identity can't alias one handle
+          // into two slots.
+          if (!byCell.has(h.cell)) byCell.set(h.cell, h);
+        }
+
+        const used = new Set<InternalCellHandle>();
+        const next: InternalCellHandle[] = nextCells.map((cell, i) => {
+          const existing = byCell.get(cell);
+          if (existing && !used.has(existing)) {
+            used.add(existing);
+            existing.setIndex(i);
+            return existing;
+          }
+          return createCell(i, cell, {
             ctx,
             plugins,
             markdownProcessor,
             languages,
           });
-          handles.push(h);
-          root.append(h.el);
         });
+
+        // Detach handles no longer present. Their DOM leaves `root`, so the
+        // post-render onRendered sweep can reclaim any per-cell plugin state
+        // (e.g. CodeMirror views).
+        for (const h of handles) {
+          if (!used.has(h)) h.el.remove();
+        }
+
+        // Sync root's child order to `next` with minimal DOM churn: a reused
+        // node already in its target slot is left untouched (so a focused
+        // editor keeps focus); only out-of-place or new nodes are moved.
+        next.forEach((h, i) => {
+          const atSlot = root.children[i];
+          if (atSlot !== h.el) root.insertBefore(h.el, atSlot ?? null);
+        });
+
+        handles.length = 0;
+        handles.push(...next);
+
+        for (const p of plugins) {
+          try {
+            p.onRendered?.(ctx);
+          } catch (err) {
+            console.error(
+              `[jupyter-kit] plugin "${p.name}" onRendered failed:`,
+              err,
+            );
+          }
+        }
       };
 
       // Ctrl/Cmd+S inside the renderer saves the notebook as ipynb. Bound at

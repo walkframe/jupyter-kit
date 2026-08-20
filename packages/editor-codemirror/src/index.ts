@@ -60,31 +60,10 @@ export function createEditorPlugin(
 
   // Every EditorView we create, so we can destroy() them. CodeMirror views
   // register document observers and event listeners that plain DOM removal
-  // does NOT release, so relying on GC (as the old teardown comment claimed)
-  // leaks on every rebuild. core's `build()` calls `root.replaceChildren()`,
-  // detaching all prior editors from the renderer root without a per-cell
-  // teardown hook — so after each build we sweep for views no longer under
-  // `root` and destroy them.
+  // does NOT release, so relying on GC leaks the view. core reconciles cells on
+  // update() and calls `onRendered` once the DOM has settled; that's where we
+  // sweep views whose cell was removed (their `.dom` is no longer under root).
   const liveViews = new Set<EditorView>();
-  let sweepScheduled = false;
-  const scheduleSweep = (root: HTMLElement) => {
-    if (sweepScheduled) return;
-    sweepScheduled = true;
-    // Defer to a microtask: the synchronous build() first replaces children
-    // and then appends the new cells, so only once it settles are the new
-    // views under `root` and the orphaned ones outside it. Using
-    // `root.contains` (not `isConnected`) keeps this correct even when the
-    // renderer root is mounted into a detached container.
-    queueMicrotask(() => {
-      sweepScheduled = false;
-      for (const view of liveViews) {
-        if (!root.contains(view.dom)) {
-          view.destroy();
-          liveViews.delete(view);
-        }
-      }
-    });
-  };
 
   return {
     name: '@jupyter-kit/editor-codemirror',
@@ -180,7 +159,17 @@ export function createEditorPlugin(
       const view = new EditorView({ state, parent: host });
       cellViews.set(host, view);
       liveViews.add(view);
-      scheduleSweep(ctx.root);
+    },
+
+    onRendered(ctx) {
+      // A reconciled-out cell has had its DOM detached from `root`; destroy its
+      // editor so CodeMirror releases the view's observers/listeners.
+      for (const view of liveViews) {
+        if (!ctx.root.contains(view.dom)) {
+          view.destroy();
+          liveViews.delete(view);
+        }
+      }
     },
 
     cellToolbar(handle, ctx) {

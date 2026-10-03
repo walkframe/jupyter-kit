@@ -51,6 +51,11 @@ const ICON_DELETE =
 
 const cellViews = new WeakMap<HTMLElement, EditorView>();
 
+// core's reconciler calls this once per mount/update after the cell DOM settles.
+// It isn't part of the public Plugin type (that would be new API surface), so we
+// attach it via this structural internal type and still return a plain Plugin.
+type InternalPlugin = Plugin & { onRendered(ctx: RuntimeContext): void };
+
 export function createEditorPlugin(
   opts: EditorCodemirrorOptions = {},
 ): Plugin {
@@ -58,7 +63,14 @@ export function createEditorPlugin(
   const extraExtensions = opts.extensions ?? [];
   const showLineNumbers = opts.lineNumbers ?? false;
 
-  return {
+  // Every EditorView we create, so we can destroy() them. CodeMirror views
+  // register document observers and event listeners that plain DOM removal
+  // does NOT release, so relying on GC leaks the view. core reconciles cells on
+  // update() and calls `onRendered` once the DOM has settled; that's where we
+  // sweep views whose cell was removed (their `.dom` is no longer under root).
+  const liveViews = new Set<EditorView>();
+
+  const plugin: InternalPlugin = {
     name: '@jupyter-kit/editor-codemirror',
 
     onCodeBlock(codeEl, language, ctx) {
@@ -151,6 +163,18 @@ export function createEditorPlugin(
 
       const view = new EditorView({ state, parent: host });
       cellViews.set(host, view);
+      liveViews.add(view);
+    },
+
+    onRendered(ctx) {
+      // A reconciled-out cell has had its DOM detached from `root`; destroy its
+      // editor so CodeMirror releases the view's observers/listeners.
+      for (const view of liveViews) {
+        if (!ctx.root.contains(view.dom)) {
+          view.destroy();
+          liveViews.delete(view);
+        }
+      }
     },
 
     cellToolbar(handle, ctx) {
@@ -196,9 +220,14 @@ export function createEditorPlugin(
     },
 
     teardown() {
-      // Views will be GC'd with their DOM; no global state to clean up.
+      // Destroy every live editor so CodeMirror releases its observers and
+      // listeners; DOM removal alone would leave them attached.
+      for (const view of liveViews) view.destroy();
+      liveViews.clear();
     },
   };
+
+  return plugin;
 }
 
 function makeIconButton(

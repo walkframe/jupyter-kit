@@ -1,7 +1,5 @@
 /** Runtime helpers shared by `h()` and the JSX runtime. */
 
-type EventHandler = (e: Event) => void;
-
 export const Fragment = Symbol('ipynb.Fragment');
 
 export function applyAttrs(el: HTMLElement, attrs: Record<string, unknown>): void {
@@ -30,8 +28,6 @@ export function applyAttrs(el: HTMLElement, attrs: Record<string, unknown>): voi
     } else {
       el.setAttribute(key, String(value));
     }
-    // `EventHandler` kept for type-level callers; unused locally.
-    void (null as unknown as EventHandler);
   }
 }
 

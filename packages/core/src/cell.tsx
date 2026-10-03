@@ -18,13 +18,23 @@ export type CellBuildDeps = {
   languages: Map<string, LanguageDef>;
 };
 
+/**
+ * Renderer-internal extension of CellHandle. `setIndex` lets the reconciler
+ * reassign a reused cell's position after a reorder/delete without rebuilding
+ * its DOM (and its editor). Kept off the public CellHandle type.
+ */
+export type InternalCellHandle = CellHandle & {
+  setIndex(next: number): void;
+};
+
 /** Build a CellHandle bound to a freshly created root element. */
 export function createCell(
   index: number,
   initialCell: CellType,
   deps: CellBuildDeps,
-): CellHandle {
+): InternalCellHandle {
   let cell: CellType = initialCell;
+  let idx = index;
   let running = false;
 
   const inputPrompt = <div class="prompt input_prompt" /> as HTMLElement;
@@ -41,9 +51,17 @@ export function createCell(
     </div>
   ) as HTMLElement;
 
-  const handle: CellHandle = {
+  const handle: InternalCellHandle = {
     get index() {
-      return index;
+      return idx;
+    },
+    setIndex(next) {
+      if (next === idx) return;
+      idx = next;
+      // Only the prompt depends on the index (seqAsExecutionCount numbering);
+      // re-render just that, never the input area (which may hold a focused
+      // editor).
+      renderPromptOnly();
     },
     get cell() {
       return cell;
@@ -94,7 +112,7 @@ export function createCell(
 
   const renderPromptOnly = () => {
     inputPrompt.replaceChildren(
-      <Prompt cell={cell} index={index} deps={deps} running={running} />,
+      <Prompt cell={cell} index={idx} deps={deps} running={running} />,
     );
   };
 

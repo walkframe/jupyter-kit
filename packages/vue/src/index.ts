@@ -22,8 +22,10 @@ import {
 /**
  * Vue 3 wrapper around `@jupyter-kit/core`. The renderer is mounted to an
  * internal `<div>` once, and re-used across `ipynb` prop changes via
- * `handle.update(...)` so the DOM (and any active CodeMirror editors) is not
- * torn down needlessly.
+ * `handle.update(...)`, which reconciles cells by object identity: cells whose
+ * object reference is unchanged keep their exact DOM (and any active CodeMirror
+ * editor / focus). To benefit, preserve the identity of unchanged cell objects
+ * across updates (immutable-update style) rather than deep-cloning the notebook.
  */
 export const Notebook = /* #__PURE__ */ defineComponent({
   name: 'Notebook',

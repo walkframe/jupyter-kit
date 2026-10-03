@@ -10,6 +10,15 @@ import type {
 } from '@jupyter-kit/comm';
 
 import { WORKER_SOURCE } from './worker-source';
+import {
+  deriveIndexURL,
+  isPython,
+  makeError,
+  normalizeMime,
+  randomId,
+  toArray,
+  toErrorOutput,
+} from './internal';
 
 const DEFAULT_VERSION = '0.26.2';
 
@@ -299,6 +308,44 @@ export function createPyodideExecutor(
       opts.onStatus?.('loading');
 
       return new Promise<OutputType[]>((resolve) => {
+        let settled = false;
+
+        // Single teardown for every exit path (done / worker crash / abort).
+        // Without this, a worker that dies before posting `done` — a boot
+        // failure, a wasm OOM, an uncaught error — leaves `onMessage` attached
+        // forever and the caller awaiting a promise that never settles.
+        const cleanup = () => {
+          w.removeEventListener('message', onMessage);
+          w.removeEventListener('error', onError);
+          signal?.removeEventListener('abort', onAbort);
+        };
+        const settle = (result: OutputType[]) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(result);
+        };
+
+        // Worker-level crash (uncaught error in the worker global scope). Surface
+        // it as an error output in the cell rather than hanging.
+        const onError = (e: ErrorEvent) => {
+          flushCurrent();
+          opts.onStatus?.('error', e.message);
+          outputs.push(
+            makeError('WorkerError', e.message || 'Pyodide worker crashed'),
+          );
+          settle(outputs);
+        };
+
+        // Mid-run abort: stop listening and resolve with whatever streamed so
+        // far. The worker keeps running to completion (Pyodide executes
+        // synchronously and can't be interrupted here), but its later messages
+        // are ignored now that our listener is detached.
+        const onAbort = () => {
+          flushCurrent();
+          settle(outputs);
+        };
+
         const onMessage = (e: MessageEvent) => {
           const m = e.data as ToMain;
           if (!m || m.id !== id) return;
@@ -345,13 +392,19 @@ export function createPyodideExecutor(
               break;
             case 'done':
               flushCurrent();
-              w.removeEventListener('message', onMessage);
               opts.onStatus?.('ready');
-              resolve(outputs);
+              settle(outputs);
               break;
           }
         };
+
+        if (signal?.aborted) {
+          settle(outputs);
+          return;
+        }
         w.addEventListener('message', onMessage);
+        w.addEventListener('error', onError);
+        signal?.addEventListener('abort', onAbort, { once: true });
         w.postMessage({
           type: 'execute',
           id,
@@ -370,26 +423,7 @@ export function createPyodideExecutor(
 }
 
 // -- helpers -----------------------------------------------------------------
-
-function toArray<T>(v: T | T[] | undefined): T[] | undefined {
-  if (v === undefined) return undefined;
-  return Array.isArray(v) ? v : [v];
-}
-
-function deriveIndexURL(src: string): string {
-  // `src` is the URL of `pyodide.js`; `indexURL` is the directory
-  // containing it (Pyodide appends wheel filenames to this). Strip the
-  // trailing filename but keep the trailing slash.
-  const slash = src.lastIndexOf('/');
-  return slash >= 0 ? src.slice(0, slash + 1) : src;
-}
-
-function randomId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return Math.random().toString(36).slice(2);
-}
+// Pure helpers live in ./internal so they can be unit-tested without a Worker.
 
 type StatusCallback = (msg: { content: { execution_state: 'idle' } }) => void;
 type CommCallbacksWithIopub = {
@@ -410,68 +444,4 @@ function fakeIdleStatus(callbacks: CommCallbacksWithIopub): void {
       /* swallow */
     }
   });
-}
-
-function isPython(language: string): boolean {
-  return language === 'python' || language === 'py' || language === 'python3';
-}
-
-function normalizeMime(
-  bundle: Record<string, unknown>,
-): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [mime, val] of Object.entries(bundle)) {
-    if (val == null) continue;
-    if (Array.isArray(val)) {
-      out[mime] = val;
-      continue;
-    }
-    // Preserve structured values for JSON mime types — notably
-    // `application/vnd.jupyter.widget-view+json`, whose payload is an object
-    // like `{model_id, version_major, version_minor}`. Stringifying those
-    // would break the widgets plugin's model_id lookup.
-    if (mime === 'application/json' || mime.endsWith('+json')) {
-      if (typeof val === 'object') {
-        out[mime] = val;
-      } else {
-        out[mime] = val;
-      }
-      continue;
-    }
-    out[mime] = String(val);
-  }
-  return out;
-}
-
-function toErrorOutput(err: {
-  name?: string;
-  message?: string;
-  traceback?: string[] | null;
-}): OutputType {
-  const ename = err?.name || 'PythonError';
-  const message = err?.message ?? 'Unknown error';
-  // Prefer the worker's ANSI-formatted traceback when available — matches
-  // Jupyter/IPython styling. Fall back to splitting err.message.
-  const traceback =
-    err.traceback && err.traceback.length ? err.traceback : message.split('\n');
-  const lastLine = (err.traceback && err.traceback[err.traceback.length - 1]) ||
-    message.split('\n').pop() || '';
-  const stripped = lastLine.replace(/\x1b\[[0-9;]*m/g, '');
-  const match = stripped.match(/^([\w.]+)(?::\s*)?(.*)$/);
-  const evalue = match ? match[2] || stripped : stripped;
-  return {
-    output_type: 'error',
-    ename,
-    evalue,
-    traceback,
-  };
-}
-
-function makeError(ename: string, message: string): OutputType {
-  return {
-    output_type: 'error',
-    ename,
-    evalue: message,
-    traceback: [`${ename}: ${message}`],
-  };
 }

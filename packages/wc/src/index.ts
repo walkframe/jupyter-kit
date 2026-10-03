@@ -55,7 +55,8 @@ export class NotebookElement extends HTMLElement {
   set ipynb(v: Ipynb | null) {
     this.#ipynb = v;
     if (this.isConnected) {
-      // If renderer already mounted, swap in the new notebook cheaply.
+      // If renderer already mounted, reconcile the new notebook (cells kept by
+      // object identity retain their DOM/editor) instead of remounting.
       if (this.#handle && v) this.#handle.update(v);
       else this.#remount();
     }

@@ -65,5 +65,15 @@ jobs:
       - name: build packages (excl. theme)
         run: pnpm -r --filter "./packages/*" --filter "!@jupyter-kit/theme" run build
 
+      # Gate the publish: a tag push otherwise never runs the branch `tests`
+      # job, so without these a broken tag would publish straight to npm.
+      # typecheck runs after build because cross-package checks resolve the
+      # workspace via each package's built `dist`.
+      - name: typecheck
+        run: pnpm typecheck
+
+      - name: test
+        run: pnpm test
+
       - name: publish (rebuilds theme + publishes everything)
         run: pnpm release

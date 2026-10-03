@@ -76,7 +76,9 @@
     handle = null;
   });
 
-  // ipynb-only changes use the cheap update path so editors aren't torn down.
+  // ipynb-only changes use update(), which reconciles cells by object identity
+  // — cells kept by reference retain their DOM and editor. Preserve unchanged
+  // cell object identity across updates to avoid needless rebuilds.
   $effect(() => {
     handle?.update(ipynb);
   });

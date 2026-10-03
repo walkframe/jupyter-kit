@@ -75,7 +75,7 @@
     "@lezer/highlight": "^1.2.1",
     "@lezer/python": "^1.1.14",
     "anser": "^2.3.0",
-    "dompurify": "^3.2.7",
+    "dompurify": "^3.4.13",
     "rehype-raw": "^7.0.0",
     "rehype-stringify": "^10.0.1",
     "remark-gfm": "^4.0.1",

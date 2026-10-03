@@ -51,6 +51,11 @@ const ICON_DELETE =
 
 const cellViews = new WeakMap<HTMLElement, EditorView>();
 
+// core's reconciler calls this once per mount/update after the cell DOM settles.
+// It isn't part of the public Plugin type (that would be new API surface), so we
+// attach it via this structural internal type and still return a plain Plugin.
+type InternalPlugin = Plugin & { onRendered(ctx: RuntimeContext): void };
+
 export function createEditorPlugin(
   opts: EditorCodemirrorOptions = {},
 ): Plugin {
@@ -65,7 +70,7 @@ export function createEditorPlugin(
   // sweep views whose cell was removed (their `.dom` is no longer under root).
   const liveViews = new Set<EditorView>();
 
-  return {
+  const plugin: InternalPlugin = {
     name: '@jupyter-kit/editor-codemirror',
 
     onCodeBlock(codeEl, language, ctx) {
@@ -221,6 +226,8 @@ export function createEditorPlugin(
       liveViews.clear();
     },
   };
+
+  return plugin;
 }
 
 function makeIconButton(

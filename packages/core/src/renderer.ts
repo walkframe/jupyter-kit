@@ -3,6 +3,7 @@ import type {
   LanguageDef,
   Ipynb,
   Plugin,
+  InternalPlugin,
   Renderer,
   RendererHandle,
   RendererOptions,
@@ -189,7 +190,7 @@ export function createRenderer(opts: RendererOptions = {}): Renderer {
 
         for (const p of plugins) {
           try {
-            p.onRendered?.(ctx);
+            (p as InternalPlugin).onRendered?.(ctx);
           } catch (err) {
             console.error(
               `[jupyter-kit] plugin "${p.name}" onRendered failed:`,

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { createRenderer } from './renderer';
-import type { Ipynb } from './types';
+import type { Ipynb, InternalPlugin } from './types';
 
 const nb = (): Ipynb => ({
   cells: [
@@ -125,7 +125,9 @@ describe('incremental update (reconciliation)', () => {
   it('fires onRendered once per mount and per update', () => {
     let count = 0;
     const r = createRenderer({
-      plugins: [{ name: 'p', onRendered: () => void count++ }],
+      plugins: [
+        { name: 'p', onRendered: () => void count++ } satisfies InternalPlugin,
+      ],
     });
     const h = r.mount(host, nb());
     expect(count).toBe(1);

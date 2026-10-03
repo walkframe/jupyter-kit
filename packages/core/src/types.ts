@@ -125,16 +125,6 @@ export type Plugin = {
   setup?(ctx: RuntimeContext): void | Promise<void>;
   onCodeBlock?(el: HTMLElement, language: string, ctx: RuntimeContext): void | Promise<void>;
   onMarkdownRendered?(el: HTMLElement, ctx: RuntimeContext): void | Promise<void>;
-  /**
-   * Fired once after every mount/update once the cell DOM has settled (all
-   * reused, inserted, and removed cells are in their final positions under
-   * `ctx.root`). Plugins that own per-cell resources use this to release the
-   * ones whose cell was removed — e.g. `@jupyter-kit/editor-codemirror`
-   * destroys any CodeMirror view no longer attached under `root`. Because
-   * `update()` now reconciles instead of rebuilding, there is no per-cell
-   * teardown; this post-render sweep is how removed cells get cleaned up.
-   */
-  onRendered?(ctx: RuntimeContext): void;
   renderOutput?(
     output: OutputType,
     slot: HTMLElement,
@@ -142,6 +132,21 @@ export type Plugin = {
   ): boolean | void;
   cellToolbar?(handle: CellHandle, ctx: RuntimeContext): HTMLElement[] | void;
   teardown?(): void;
+};
+
+/**
+ * Renderer-internal extension of Plugin. `onRendered` fires once after every
+ * mount/update, once the cell DOM has settled (all reused, inserted, and
+ * removed cells are in their final positions under `ctx.root`). First-party
+ * plugins that own per-cell resources use it to release the ones whose cell was
+ * removed — e.g. `@jupyter-kit/editor-codemirror` destroys any CodeMirror view
+ * no longer attached under `root`. Because `update()` reconciles instead of
+ * rebuilding, there is no per-cell teardown; this post-render sweep is how
+ * removed cells get cleaned up. Kept off the public Plugin type and not
+ * re-exported from the package entry.
+ */
+export type InternalPlugin = Plugin & {
+  onRendered?(ctx: RuntimeContext): void;
 };
 
 export type SaveHandler = (

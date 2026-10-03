@@ -1,6 +1,6 @@
 {
   "name": "@jupyter-kit/svelte",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Svelte 5 wrapper around @jupyter-kit/core.",
   "keywords": [
     "jupyter",

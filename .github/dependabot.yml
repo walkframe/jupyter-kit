@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Version-update PRs are disabled; this entry exists only so the
+    # `ignore` list below also applies to Dependabot security updates.
+    open-pull-requests-limit: 0
+    ignore:
+      # Docs site (packages/docs)
+      - dependency-name: astro
+      - dependency-name: "@astrojs/*"
+      - dependency-name: sharp
+      # Storybook (packages/storybook)
+      - dependency-name: storybook
+      - dependency-name: "@storybook/*"

@@ -53,8 +53,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.2
       dompurify:
-        specifier: ^3.4.16
-        version: 3.4.16
+        specifier: ^3.4.17
+        version: 3.4.17
       rehype-raw:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2424,8 +2424,8 @@ packages:
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
-  '@types/lodash@4.17.25':
-    resolution: {integrity: sha512-+K1NIO8I+F9/wNulfVvu23QYd0Pe9/OCqRrim4NoYIf1VoEDL90Ve4ClzpyqBLc7NpGGWRvYNCKZ1BE/Jpf8dQ==}
+  '@types/lodash@4.17.27':
+    resolution: {integrity: sha512-VenMRv/eKNrspX9v3H4dbmjsrnCOYdYBG3kxXKk3dG6X+urBGcj2Prww3xw1U5K4FV/mE4h5GbWd0szEKf+9ew==}
 
   '@types/mathjax@0.0.40':
     resolution: {integrity: sha512-rHusx08LCg92WJxrsM3SPjvLTSvK5C+gealtSuhKbEOcUZfWlwigaFoPLf6Dfxhg4oryN5qP9Sj7zOQ4HYXINw==}
@@ -3175,8 +3175,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.16:
-    resolution: {integrity: sha512-sqo+pNp3qRhCIpbgRi1y8Tgk27Bo2Ry7w0dC1NBeNTdZChWjz9Xb/KOoZbRP/R6pQZ80Qw8YhXw13hWWBbMRnQ==}
+  dompurify@3.4.17:
+    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -4753,8 +4753,8 @@ packages:
     engines: {node: '>= 0.4'}
     hasBin: true
 
-  resolve@1.22.12:
-    resolution: {integrity: sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==}
+  resolve@1.22.13:
+    resolution: {integrity: sha512-Dj/cW9zBV2aRj6XzCxuGIs3ESZKv02jixne3q6jFZYZ3/Tg09gHHviSMDL4kObh9pqSahdRHEnDoaP2gn8YLhA==}
     engines: {node: '>= 0.4'}
     hasBin: true
 
@@ -6763,7 +6763,7 @@ snapshots:
       '@lumino/messaging': 2.0.4
       '@lumino/widgets': 2.7.5
       '@types/backbone': 1.4.23
-      '@types/lodash': 4.17.25
+      '@types/lodash': 4.17.27
       backbone: 1.2.3
       base64-js: 1.5.1
       jquery: 3.7.1
@@ -7151,7 +7151,7 @@ snapshots:
 
   '@lumino/collections@2.0.4':
     dependencies:
-      '@lumino/algorithm': 2.0.5
+      '@lumino/algorithm': 2.0.4
 
   '@lumino/commands@2.3.3':
     dependencies:
@@ -7313,7 +7313,7 @@ snapshots:
       '@rushstack/ts-command-line': 5.0.2(@types/node@20.19.39)
       lodash: 4.17.23
       minimatch: 10.0.3
-      resolve: 1.22.12
+      resolve: 1.22.13
       semver: 7.5.4
       source-map: 0.6.1
       typescript: 5.8.2
@@ -7341,7 +7341,7 @@ snapshots:
       '@microsoft/tsdoc': 0.15.1
       ajv: 8.12.0
       jju: 1.4.0
-      resolve: 1.22.12
+      resolve: 1.22.13
     optional: true
 
   '@microsoft/tsdoc@0.15.1':
@@ -7480,7 +7480,7 @@ snapshots:
       fs-extra: 11.3.6
       import-lazy: 4.0.0
       jju: 1.4.0
-      resolve: 1.22.12
+      resolve: 1.22.13
       semver: 7.5.4
     optionalDependencies:
       '@types/node': 20.19.39
@@ -7488,7 +7488,7 @@ snapshots:
 
   '@rushstack/rig-package@0.5.3':
     dependencies:
-      resolve: 1.22.12
+      resolve: 1.22.13
       strip-json-comments: 3.1.1
     optional: true
 
@@ -7929,7 +7929,7 @@ snapshots:
 
   '@types/lodash@4.17.24': {}
 
-  '@types/lodash@4.17.25': {}
+  '@types/lodash@4.17.27': {}
 
   '@types/mathjax@0.0.40': {}
 
@@ -8812,7 +8812,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.16:
+  dompurify@3.4.17:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -10950,7 +10950,7 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  resolve@1.22.12:
+  resolve@1.22.13:
     dependencies:
       es-errors: 1.3.0
       is-core-module: 2.17.0

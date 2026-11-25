@@ -5,13 +5,20 @@ updates:
     schedule:
       interval: weekly
     # Version-update PRs are disabled; this entry exists only so the
-    # `ignore` list below also applies to Dependabot security updates.
+    # `allow` / `ignore` lists below also apply to Dependabot security updates.
     open-pull-requests-limit: 0
+    # Only runtime (`dependencies`) packages matter to consumers of the
+    # published @jupyter-kit/* packages; build/test tooling is updated by hand.
+    allow:
+      - dependency-type: production
     ignore:
-      # Docs site (packages/docs)
+      # Docs site (packages/docs) — private, its `dependencies` never ship
       - dependency-name: astro
       - dependency-name: "@astrojs/*"
       - dependency-name: sharp
+      # Docs/Storybook only; @jupyter-kit/react takes react as a peer
+      - dependency-name: react
+      - dependency-name: react-dom
       # Storybook (packages/storybook)
       - dependency-name: storybook
       - dependency-name: "@storybook/*"

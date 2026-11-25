@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@jupyter-kit/core": "workspace:*",
-    "vitest": "^2.1.0"
+    "vitest": "^5.1.1"
   },
   "author": "righ",
   "license": "Apache-2.0",
